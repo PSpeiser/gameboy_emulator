@@ -54,3 +54,12 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.n == False
         assert self.cpu.flags.cy == True
 
+class TestMMU(unittest.TestCase):
+    def setUp(self):
+        self.gpu = gameboy_emulator.GPU()
+        self.mmu = gameboy_emulator.MMU(self.gpu)
+
+    def test_load_rom_file(self):
+        self.mmu.load("Tetris.gb")
+
+
