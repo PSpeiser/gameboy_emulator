@@ -35,15 +35,70 @@ class CPU(object):
 
         self.clock = Clock()
 
-        print self.registers
-        print self.flags
-        print self.clock
-
     def clear_flags(self):
         self.flags.z = False
         self.flags.n = False
         self.flags.h = False
         self.flags.cy = False
+
+    def LDr_r(self,r,r2):
+        setattr(self.registers,r,getattr(self.registers,r2))
+        self.registers.m = 1
+        self.registers.t = 4
+
+    def LDr_n(self,r,n):
+        setattr(self.registers,r,n)
+        self.registers.m = 2
+        self.registers.t = 8
+
+    def LDr_hl(self,r):
+        addr = (self.registers.h << 8) + self.registers.l
+        value = mmu.read_byte(addr)
+        setattr(self.registers,r,value)
+        self.registers.m = 2
+        self.registers.t = 8
+
+    def LDhl_r(self,r):
+        addr = (self.registers.h << 8) + self.registers.l
+        value = getattr(self.registers,r)
+        mmu.write_byte(addr,value)
+        self.registers.m = 2
+        self.registers.t = 8
+
+    def LDhl_n(self,n):
+        addr = (self.registers.h << 8) + self.registers.l
+        mmu.write_byte(addr,n)
+        self.registers.m = 3
+        self.registers.t = 12
+
+    def LDa_bc(self):
+        addr = (self.registers.b << 8) + self.registers.c
+        value = mmu.read_byte(addr)
+        self.registers.a = value
+        self.registers.m = 2
+        self.registers.t = 8
+
+    def LDa_de(self):
+        addr = (self.registers.d << 8) + self.registers.e
+        value = mmu.read_byte(addr)
+        self.registers.a = value
+        self.registers.m = 2
+        self.registers.t = 8
+
+    def LDa_c(self):
+        addr = 0xFF00 + self.registers.c
+        value = mmu.read_byte(addr)
+        self.registers.a = value
+        self.registers.m = 2
+        self.registers.t = 8
+
+    def LDc_a(self):
+        addr = 0xFF00 + self.registers.c
+        mmu.write_byte(addr,self.registers.a)
+        self.registers.m = 2
+        self.registers.t = 8
+
+
 
     def ADDr(self, r):
         #need to have the name of the register here NOT the bitcode
@@ -88,9 +143,8 @@ class CPU(object):
 
 
 class MMU(object):
-    inbios = True
-
-    def __init__(self,gpu):
+    def __init__(self):
+        self.in_bios = True
         self.bios = [0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
                      0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E, 0xFC, 0xE0,
                      0x47, 0x11, 0x04, 0x01, 0x21, 0x10, 0x80, 0x1A, 0xCD, 0x95, 0x00, 0xCD, 0x96, 0x00, 0x13, 0x7B,
@@ -107,17 +161,19 @@ class MMU(object):
                      0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E, 0x3c, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x4C,
                      0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
                      0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50]
-        self.rom = []
-        self.wram = []
-        self.eram = []
-        self.zram = []
-        self.gpu = gpu
+        self.rom = [0 for i in range(32768)]
+        self.wram = [0 for i in range(8192)]
+        self.eram = [0 for i in range(8192)]
+        self.zram = [0 for i in range(8192)] # guessing the size here, probably wrong
+
 
     def read_byte(self, addr):
         if addr < 0x1000:
-            if self.inbios:
+            if self.in_bios:
                 if addr < 0x0100:
                     return self.bios[addr]
+                elif cpu.registers.pc == 0x0100:
+                    self.in_bios = False
             return self.rom[addr]
         #Rom 0
         elif 0x1000 >= addr < 0x4000:
@@ -127,7 +183,7 @@ class MMU(object):
             return self.rom[addr]
         #VRAM
         elif 0x8000 >= addr < 0xA000:
-            return self.gpu.vram[addr & 0x1FFF]
+            return gpu.vram[addr & 0x1FFF]
 
         #External RAM 8k
         elif 0xA000 >= addr < 0xC000:
@@ -148,7 +204,7 @@ class MMU(object):
                 return self.wram[addr & 0x1FFF]
             elif area == 0xE00:
                 if addr < 0xFEA0:
-                    return self.gpu.oam[addr & 0xFF]
+                    return gpu.oam[addr & 0xFF]
                 else:
                     return 0
             elif area == 0xF00:
@@ -164,10 +220,11 @@ class MMU(object):
 
     def write_byte(self, addr, value):
         if addr < 0x1000:
-            if self.inbios:
+            if self.in_bios:
                 if addr < 0x0100:
                     self.bios[addr] = value
-            self.rom[addr] = value
+            else:
+                self.rom[addr] = value
         #Rom 0
         elif 0x1000 >= addr < 0x4000:
             self.rom[addr] = value
@@ -176,7 +233,7 @@ class MMU(object):
             self.rom[addr] = value
         #VRAM
         elif 0x8000 >= addr < 0xA000:
-            self.gpu.vram[addr & 0x1FFF] = value
+            gpu.vram[addr & 0x1FFF] = value
 
         #External RAM 8k
         elif 0xA000 >= addr < 0xC000:
@@ -197,7 +254,7 @@ class MMU(object):
                 self.wram[addr & 0x1FFF] = value
             elif area == 0xE00:
                 if addr < 0xFEA0:
-                    self.gpu.oam[addr & 0xFF] = value
+                    gpu.oam[addr & 0xFF] = value
                 else:
                     raise Exception()
             elif area == 0xF00:
@@ -227,5 +284,5 @@ class GPU(object):
 
 cpu = CPU()
 gpu = GPU()
-mmu = MMU(gpu)
+mmu = MMU()
 
