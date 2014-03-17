@@ -31,7 +31,6 @@ class CPU(object):
 
         class Clock(object):
             self.m = 0
-            self.t = 0
 
         self.clock = Clock()
 
@@ -44,61 +43,124 @@ class CPU(object):
     def LDr_r(self,r,r2):
         setattr(self.registers,r,getattr(self.registers,r2))
         self.registers.m = 1
-        self.registers.t = 4
 
-    def LDr_n(self,r,n):
+    def LDr_n(self,r):
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
         setattr(self.registers,r,n)
         self.registers.m = 2
-        self.registers.t = 8
 
     def LDr_hl(self,r):
         addr = (self.registers.h << 8) + self.registers.l
         value = mmu.read_byte(addr)
         setattr(self.registers,r,value)
         self.registers.m = 2
-        self.registers.t = 8
 
     def LDhl_r(self,r):
         addr = (self.registers.h << 8) + self.registers.l
         value = getattr(self.registers,r)
         mmu.write_byte(addr,value)
         self.registers.m = 2
-        self.registers.t = 8
 
-    def LDhl_n(self,n):
+    def LDhl_n(self):
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
         addr = (self.registers.h << 8) + self.registers.l
         mmu.write_byte(addr,n)
         self.registers.m = 3
-        self.registers.t = 12
 
     def LDa_bc(self):
         addr = (self.registers.b << 8) + self.registers.c
         value = mmu.read_byte(addr)
         self.registers.a = value
         self.registers.m = 2
-        self.registers.t = 8
 
     def LDa_de(self):
         addr = (self.registers.d << 8) + self.registers.e
         value = mmu.read_byte(addr)
         self.registers.a = value
         self.registers.m = 2
-        self.registers.t = 8
 
     def LDa_c(self):
         addr = 0xFF00 + self.registers.c
         value = mmu.read_byte(addr)
         self.registers.a = value
         self.registers.m = 2
-        self.registers.t = 8
 
     def LDc_a(self):
         addr = 0xFF00 + self.registers.c
         mmu.write_byte(addr,self.registers.a)
         self.registers.m = 2
-        self.registers.t = 8
 
+    def LDa_n(self):
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        self.registers.a = mmu.read_byte(0xFF00 + n)
+        self.registers.m = 3
 
+    def LDn_a(self):
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        mmu.write_byte(n,self.registers.a)
+        self.registers.m = 3
+
+    def LDa_nn(self):
+        n = mmu.read_word(self.registers.pc)
+        self.registers.pc += 2
+        self.registers.a = mmu.read_byte(n)
+        self.registers.m = 4
+
+    def LDnn_a(self):
+        n = mmu.read_word(self.registers.pc)
+        self.registers.pc += 2
+        mmu.write_byte(n,self.registers.a)
+        self.registers.m = 4
+
+    def LDa_hli(self):
+        addr = (self.registers.h << 8) + self.registers.l
+        self.registers.a = mmu.read_byte(addr)
+        #increment hl
+        addr += 1
+        self.registers.h = (addr >> 8) & 0xFF
+        self.registers.l = addr & 0xFF
+        self.registers.m = 2
+
+    def LDa_hld(self):
+        addr = (self.registers.h << 8) + self.registers.l
+        self.registers.a = mmu.read_byte(addr)
+        #decrement hl
+        addr -= 1
+        self.registers.h = (addr >> 8)& 0xFF
+        self.registers.l = addr & 0xFF
+        self.registers.m = 2
+
+    def LDbc_a(self):
+        addr = (self.registers.b << 8) + self.registers.c
+        mmu.write_byte(addr,self.registers.a)
+        self.registers.m = 2
+
+    def LDde_a(self):
+        addr = (self.registers.d << 8) + self.registers.e
+        mmu.write_byte(addr,self.registers.a)
+        self.registers.m = 2
+
+    def LDhli_a(self):
+        addr = (self.registers.h << 8) + self.registers.l
+        mmu.write_byte(addr,self.registers.a)
+        #increment hl
+        addr += 1
+        self.registers.h = (addr >> 8) & 0xFF
+        self.registers.l = addr & 0xFF
+        self.registers.m = 2
+
+    def LDhld_a(self):
+        addr = (self.registers.h << 8) + self.registers.l
+        mmu.write_byte(addr,self.registers.a)
+        #decrement hl
+        addr -= 1
+        self.registers.h = addr >> 8
+        self.registers.l = addr & 0xFF
+        self.registers.m = 2
 
     def ADDr(self, r):
         #need to have the name of the register here NOT the bitcode
@@ -174,6 +236,7 @@ class MMU(object):
                     return self.bios[addr]
                 elif cpu.registers.pc == 0x0100:
                     self.in_bios = False
+                    #return nothing here ?
             return self.rom[addr]
         #Rom 0
         elif 0x1000 >= addr < 0x4000:
@@ -223,6 +286,8 @@ class MMU(object):
             if self.in_bios:
                 if addr < 0x0100:
                     self.bios[addr] = value
+                else:
+                    self.rom[addr] = value
             else:
                 self.rom[addr] = value
         #Rom 0
@@ -278,7 +343,7 @@ class MMU(object):
 
 class GPU(object):
     def __init__(self):
-        self.vram = []
+        self.vram = [0 for i in range(16384)] #16kb vram
         self.oam = []
 
 
