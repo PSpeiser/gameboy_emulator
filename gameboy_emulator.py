@@ -162,6 +162,36 @@ class CPU(object):
         self.registers.l = addr & 0xFF
         self.registers.m = 2
 
+    def LDdd_nn(self,dd):
+        nn = mmu.read_word(self.registers.pc)
+        if dd == 'bc':
+            self.registers.b = nn >> 8
+            self.registers.c = nn & 0xFF
+        elif dd == 'de':
+            self.registers.d = nn >> 8
+            self.registers.e = nn & 0xFF
+        elif dd == 'hl':
+            self.registers.h = nn >> 8
+            self.registers.l = nn & 0xFF
+        elif dd == 'sp':
+            self.registers.sp = nn
+        self.registers.pc += 2
+        self.registers.m = 3
+
+    def LDbc_nn(self):
+        self.LDdd_nn('bc')
+    def LDde_nn(self):
+        self.LDdd_nn('de')
+    def LDhl_nn(self):
+        self.LDdd_nn('hl')
+    def LDsp_nn(self):
+        self.LDdd_nn('sp')
+
+
+    def LDsp_hl(self):
+        self.registers.sp = (self.registers.h << 8) + self.registers.l
+        self.registers.m = 2
+
     def ADDr(self, r):
         #need to have the name of the register here NOT the bitcode
         self.clear_flags()

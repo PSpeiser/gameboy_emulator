@@ -155,6 +155,21 @@ class TestCPUIO(unittest.TestCase):
         assert self.cpu.registers.h == 0x3F
         assert self.cpu.registers.l == 0xFF
 
+    def test_LDdd_nn(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_word(0x1000,0x3A5B)
+        self.cpu.LDdd_nn('hl')
+        assert self.cpu.registers.h == 0x3A
+        assert self.cpu.registers.l == 0x5b
+        assert self.cpu.registers.pc == 0x1002
+
+    def test_LDsp_hl(self):
+        self.cpu.registers.h = 0xFF
+        self.cpu.registers.l = 0xFF
+        self.cpu.LDsp_hl()
+        assert self.cpu.registers.sp == 0xFFFF
+
+
 
 
 class TestCPUArithmetic(unittest.TestCase):
