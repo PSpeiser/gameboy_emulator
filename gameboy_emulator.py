@@ -802,9 +802,50 @@ class CPU(object):
         self.registers.a = self.registers.a & hlval
         if self.registers.a == 0:
             self.flags.z = True
-        temp = ((self.registers.a&0xf) + (hlval&0xf))&0x10
         self.flags.h = True
         self.registers.m += 2
+
+    def ORr(self,r):
+        self.clear_flags()
+        self.registers.a = self.registers.a | getattr(self.registers,r)
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.registers.m = 1
+
+    #region ORr Shortcuts
+    def ORa(self):
+        self.ORr('a')
+    def ORb(self):
+        self.ORr('b')
+    def ORc(self):
+        self.ORr('c')
+    def ORd(self):
+        self.ORr('d')
+    def ORe(self):
+        self.ORr('e')
+    def ORh(self):
+        self.ORr('h')
+    def ORl(self):
+        self.ORr('l')
+    #endregion
+
+    def ORn(self):
+        self.clear_flags()
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        self.registers.a = self.registers.a | n
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.registers.m += 2
+
+    def ORhl(self):
+        self.clear_flags()
+        hlval = self.get_hl_value()
+        self.registers.a = self.registers.a | hlval
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.registers.m += 2
+
 
 
     def NOP(self):

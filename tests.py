@@ -447,6 +447,28 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.n == False
         assert self.cpu.flags.cy == False
 
+    def test_ORr(self):
+        self.cpu.registers.a = 0x5A
+        self.cpu.ORr('a')
+        assert self.cpu.registers.a == 0x5A
+        assert self.cpu.flags.z == False
+
+    def test_ORn(self):
+        self.cpu.registers.a = 0x5A
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,0x03)
+        self.cpu.ORn()
+        assert self.cpu.registers.a == 0x5B
+        assert self.cpu.flags.z == False
+
+    def test_ORhl(self):
+        self.cpu.registers.a = 0x5A
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000,0x0F)
+        self.cpu.ORhl()
+        assert self.cpu.registers.a == 0x5F
+        assert self.cpu.flags.z == False
 
 
 class TestMMU(unittest.TestCase):
