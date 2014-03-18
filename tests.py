@@ -227,6 +227,7 @@ class TestCPUIO(unittest.TestCase):
 class TestCPUArithmetic(unittest.TestCase):
     def setUp(self):
         self.cpu = gameboy_emulator.cpu
+        self.mmu = gameboy_emulator.mmu
 
     def test_ADDr_example(self):
         self.cpu.registers.a = 0x3A
@@ -269,8 +270,10 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.cy == False
 
     def test_ADDn_example(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,0xFF)
         self.cpu.registers.a = 0x3C
-        self.cpu.ADDn(0xFF)
+        self.cpu.ADDn()
         assert self.cpu.registers.a == 0x3B
         assert self.cpu.flags.z == False
         assert self.cpu.flags.h == True

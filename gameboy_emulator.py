@@ -42,24 +42,173 @@ class CPU(object):
     def LDr_r(self,r,r2):
         setattr(self.registers,r,getattr(self.registers,r2))
         self.registers.m = 1
+    #region LDr_r Shortcuts
+    def LDa_a(self):
+        self.LDr_r('a','a')
+    def LDa_b(self):
+        self.LDr_r('a','b')
+    def LDa_c(self):
+        self.LDr_r('a','c')
+    def LDa_d(self):
+        self.LDr_r('a','d')
+    def LDa_e(self):
+        self.LDr_r('a','e')
+    def LDa_h(self):
+        self.LDr_r('a','h')
+    def LDa_l(self):
+        self.LDr_r('a','l')
+    def LDb_a(self):
+        self.LDr_r('b','a')
+    def LDb_b(self):
+        self.LDr_r('b','b')
+    def LDb_c(self):
+        self.LDr_r('b','c')
+    def LDb_d(self):
+        self.LDr_r('b','d')
+    def LDb_e(self):
+        self.LDr_r('b','e')
+    def LDb_h(self):
+        self.LDr_r('b','h')
+    def LDb_l(self):
+        self.LDr_r('b','l')
+    def LDc_a(self):
+        self.LDr_r('c','a')
+    def LDc_b(self):
+        self.LDr_r('c','b')
+    def LDc_c(self):
+        self.LDr_r('c','c')
+    def LDc_d(self):
+        self.LDr_r('c','d')
+    def LDc_e(self):
+        self.LDr_r('c','e')
+    def LDc_h(self):
+        self.LDr_r('c','h')
+    def LDc_l(self):
+        self.LDr_r('c','l')
+    def LDd_a(self):
+        self.LDr_r('d','a')
+    def LDd_b(self):
+        self.LDr_r('d','b')
+    def LDd_c(self):
+        self.LDr_r('d','c')
+    def LDd_d(self):
+        self.LDr_r('d','d')
+    def LDd_e(self):
+        self.LDr_r('d','e')
+    def LDd_h(self):
+        self.LDr_r('d','h')
+    def LDd_l(self):
+        self.LDr_r('d','l')
+    def LDe_a(self):
+        self.LDr_r('e','a')
+    def LDe_b(self):
+        self.LDr_r('e','b')
+    def LDe_c(self):
+        self.LDr_r('e','c')
+    def LDe_d(self):
+        self.LDr_r('e','d')
+    def LDe_e(self):
+        self.LDr_r('e','e')
+    def LDe_h(self):
+        self.LDr_r('e','h')
+    def LDe_l(self):
+        self.LDr_r('e','l')
+    def LDh_a(self):
+        self.LDr_r('h','a')
+    def LDh_b(self):
+        self.LDr_r('h','b')
+    def LDh_c(self):
+        self.LDr_r('h','c')
+    def LDh_d(self):
+        self.LDr_r('h','d')
+    def LDh_e(self):
+        self.LDr_r('h','e')
+    def LDh_h(self):
+        self.LDr_r('h','h')
+    def LDh_l(self):
+        self.LDr_r('h','l')
+    def LDl_a(self):
+        self.LDr_r('l','a')
+    def LDl_b(self):
+        self.LDr_r('l','b')
+    def LDl_c(self):
+        self.LDr_r('l','c')
+    def LDl_d(self):
+        self.LDr_r('l','d')
+    def LDl_e(self):
+        self.LDr_r('l','e')
+    def LDl_h(self):
+        self.LDr_r('l','h')
+    def LDl_l(self):
+        self.LDr_r('l','l')
+    #endregion
 
     def LDr_n(self,r):
         n = mmu.read_byte(self.registers.pc)
         self.registers.pc += 1
         setattr(self.registers,r,n)
         self.registers.m = 2
+    #region LDr_n Shortcuts
+    def LDa_n(self):
+        self.LDr_n('a')
+    def LDb_n(self):
+        self.LDr_n('b')
+    def LDc_n(self):
+        self.LDr_n('c')
+    def LDd_n(self):
+        self.LDr_n('d')
+    def LDe_n(self):
+        self.LDr_n('e')
+    def LDh_n(self):
+        self.LDr_n('h')
+    def LDl_n(self):
+        self.LDr_n('l')
+    #endregion
 
     def LDr_hl(self,r):
         addr = (self.registers.h << 8) + self.registers.l
         value = mmu.read_byte(addr)
         setattr(self.registers,r,value)
         self.registers.m = 2
+    #region LDr_hl Shortcuts
+    def LDa_hl(self):
+        self.LDr_hl('a')
+    def LDb_hl(self):
+        self.LDr_hl('b')
+    def LDc_hl(self):
+        self.LDr_hl('c')
+    def LDd_hl(self):
+        self.LDr_hl('d')
+    def LDe_hl(self):
+        self.LDr_hl('e')
+    def LDh_hl(self):
+        self.LDr_hl('h')
+    def LDl_hl(self):
+        self.LDr_hl('l')
+    #endregion
+
 
     def LDhl_r(self,r):
         addr = (self.registers.h << 8) + self.registers.l
         value = getattr(self.registers,r)
         mmu.write_byte(addr,value)
         self.registers.m = 2
+    #region LDhl_r
+    def LDhl_a(self):
+        self.LDhl_r('a')
+    def LDhl_b(self):
+        self.LDhl_r('b')
+    def LDhl_c(self):
+        self.LDhl_r('c')
+    def LDhl_d(self):
+        self.LDhl_r('d')
+    def LDhl_e(self):
+        self.LDhl_r('e')
+    def LDhl_h(self):
+        self.LDhl_r('h')
+    def LDhl_l(self):
+        self.LDhl_r('l')
+    #endregion
 
     def LDhl_n(self):
         n = mmu.read_byte(self.registers.pc)
@@ -272,6 +421,7 @@ class CPU(object):
 
     #endregion
 
+    #region 8-Bit Arithmetic and Logical Operation Instructions
     def ADDr(self, r):
         #need to have the name of the register here NOT the bitcode
         self.clear_flags()
@@ -291,8 +441,25 @@ class CPU(object):
         self.registers.m = 1
         self.registers.t = 4
 
-    def ADDn(self, n):
+    def ADDa(self):
+        self.ADDr('a')
+    def ADDb(self):
+        self.ADDr('b')
+    def ADDc(self):
+        self.ADDr('c')
+    def ADDd(self):
+        self.ADDr('d')
+    def ADDe(self):
+        self.ADDr('e')
+    def ADDh(self):
+        self.ADDr('h')
+    def ADDl(self):
+        self.ADDr('l')
+
+    def ADDn(self):
         self.clear_flags()
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
         #check for half-carry
         if (n & 0xF) + (self.registers.a & 0xF) > 15:
             self.flags.h = True
@@ -308,6 +475,8 @@ class CPU(object):
             self.flags.z = True
         self.registers.m = 2
         self.registers.t = 8
+
+    #endregion
 
     def NOP(self):
         self.registers.m = 1
