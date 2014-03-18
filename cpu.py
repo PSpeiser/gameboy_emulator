@@ -43,6 +43,20 @@ class CPU(object):
         elif register_pair == 'sp':
             return self.registers.sp
 
+    def set_register_pair(self,register_pair,value):
+        if register_pair == 'bc':
+            self.registers.b = (value >> 8) & 0xFF
+            self.registers.c = value & 0xFF
+        elif register_pair == 'de':
+            self.registers.d = (value >> 8) & 0xFF
+            self.registers.e = value & 0xFF
+        elif register_pair == 'hl':
+            self.registers.h = (value >> 8) & 0xFF
+            self.registers.l = value & 0xFF
+        elif register_pair == 'sp':
+            self.registers.sp = value & 0xFFFF
+
+
     def get_immediate_operand(self):
         value = self.mmu.read_byte(self.registers.pc)
         self.registers.pc += 1
@@ -514,8 +528,7 @@ class CPU(object):
         value += self.registers.sp
         if value > 0xFFFF:
             self.flags.cy = True
-        self.registers.h = (value >> 8) & 0xFF
-        self.registers.l = value & 0xFF
+        self.set_register_pair('hl',value)
         self.registers.m = 3
 
     def LDnn_sp(self):
@@ -1189,13 +1202,12 @@ class CPU(object):
         hlvalue = self.get_register_pair('hl')
         ssvalue = self.get_register_pair(ss)
         value = hlvalue + ssvalue
-        if (ssvalue & 0xFF) + (hlvalue & 0xFF) > 15:
+        if (ssvalue & 0xFF) + (hlvalue & 0xFF) > 0xF:
             self.flags.h = True
         if value > 0xFFFF:
             self.flags.cy = True
         value = value & 0xFFFF
-        self.registers.h = value >> 8
-        self.registers.l = value & 0xFF
+        self.set_register_pair('hl',value)
 
     def ADDhl_bc(self):
         self.ADDhl_ss('bc')
@@ -1206,7 +1218,44 @@ class CPU(object):
     def ADDhl_sp(self):
         self.ADDhl_ss('sp')
 
+    def ADDsp_e(self):
+        self.clear_flags()
+        e = self.get_immediate_operand()
+        value = self.registers.sp + e
+        if (self.registers.sp & 0xFF) + (e & 0xFF) > 0xFF:
+            self.flags.h = True
+        if value > 0xFFFF:
+            self.flags.cy = True
+        value = value & 0xFFFF
+        if value == 0:
+            self.flags.z = True
+        self.registers.sp = value
 
+    def INC_ss(self,ss):
+        self.clear_flags()
+        self.set_register_pair(ss,self.get_register_pair(ss) + 1)
+
+    def INC_bc(self):
+        self.INC_ss('bc')
+    def INC_de(self):
+        self.INC_ss('de')
+    def INC_hl(self):
+        self.INC_ss('hl')
+    def INC_sp(self):
+        self.INC_ss('sp')
+
+    def DEC_ss(self,ss):
+        self.clear_flags()
+        self.set_register_pair(ss,self.get_register_pair(ss) - 1)
+
+    def DEC_bc(self):
+        self.DEC_ss('bc')
+    def DEC_de(self):
+        self.DEC_ss('de')
+    def DEC_hl(self):
+        self.DEC_ss('hl')
+    def DEC_sp(self):
+        self.DEC_ss('sp')
 
     def NOP(self):
         self.registers.m = 1

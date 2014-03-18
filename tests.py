@@ -581,6 +581,27 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.n == False
         assert self.cpu.flags.cy == True
 
+    def test_ADDsp_e(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,0x02)
+        self.cpu.registers.sp = 0xFFF8
+        self.cpu.ADDsp_e()
+        assert self.cpu.registers.sp == 0xFFFA
+        assert self.cpu.flags.cy == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+        assert self.cpu.flags.z == False
+
+    def INC_ss(self):
+        self.cpu.set_register_pair('de',0x235F)
+        self.cpu.INC_ss('de')
+        assert self.cpu.get_register_pair('de') == 0x2360
+
+    def DEC_ss(self):
+        self.cpu.set_register_pair('de',0x235F)
+        self.cpu.DEC_ss('de')
+        assert self.cpu.get_register_pair('de') == 0x235E
+
 
 class TestMMU(unittest.TestCase):
     def setUp(self):
