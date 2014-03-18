@@ -33,10 +33,11 @@ class CPU(object):
         self.clock = Clock()
 
     #region Utility functions
+    def get_hl_addr(self):
+        return (self.registers.h << 8) + self.registers.l
 
     def get_hl_value(self):
-        hladdr = (self.registers.h << 8) + self.registers.l
-        hlval = self.mmu.read_byte(hladdr)
+        hlval = self.mmu.read_byte(self.get_hl_addr())
         return hlval
 
     def clear_flags(self):
@@ -1079,7 +1080,7 @@ class CPU(object):
         if (result ^ value ^ self.registers.a) & 0x10 > 15:
             self.flags.h = True
         self.flags.n = True
-        self.registers.m = 1
+        self.registers.m = 2
 
     def CPhl(self):
         self.clear_flags()
@@ -1090,12 +1091,105 @@ class CPU(object):
             #check for carry
         if result < 0:
             self.flags.cy = True
-        temp = (result ^ value ^ self.registers.a) & 0x10
-        t2 = ((self.registers.a & 0xF) - (value & 0xf)) & 0x10
         if (result ^ value ^ self.registers.a) & 0x10 > 15:
             self.flags.h = True
         self.flags.n = True
+        self.registers.m = 2
+
+    def INCr(self,r):
+        self.clear_flags()
+        #increment register by one
+        value = getattr(self.registers,r) + 1
+        #check for overflow
+        if value > 255:
+            self.flags.cy = True
+        #check for half-carry
+        if (1 & 0xF) + (self.registers.a & 0xF) > 15:
+            self.flags.h = True
+        #mask the register to 8 bits
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        setattr(self.registers,r,value)
         self.registers.m = 1
+
+    #region INCr Shortcuts
+    def INCa(self):
+        self.INCr('a')
+    def INCb(self):
+        self.INCr('b')
+    def INCc(self):
+        self.INCr('c')
+    def INCd(self):
+        self.INCr('d')
+    def INCe(self):
+        self.INCr('e')
+    def INCh(self):
+        self.INCr('h')
+    def INCl(self):
+        self.INCr('l')
+    #endregion
+
+    def INChl(self):
+        self.clear_flags()
+        hlvalue = self.get_hl_value() + 1
+        if (1 & 0xF) + (hlvalue & 0xF) > 15:
+            self.flags.h = True
+        if hlvalue > 255:
+            self.flags.cy = True
+        hlvalue = hlvalue & 0xFF
+        if hlvalue == 0:
+            self.flags.z = True
+        self.mmu.write_byte(self.get_hl_addr(),hlvalue)
+
+    def DECr(self,r):
+        self.clear_flags()
+        #DECrement register by one
+        value = getattr(self.registers,r) - 1
+        #check for underflow
+        if value < 0:
+            self.flags.cy = True
+        #check for half-carry
+        if (1 & 0xF) + (self.registers.a & 0xF) > 15:
+            self.flags.h = True
+        #mask the register to 8 bits
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        self.flags.n = True
+        setattr(self.registers,r,value)
+        self.registers.m = 1
+
+    #region DECr Shortcuts
+    def DECa(self):
+        self.DECr('a')
+    def DECb(self):
+        self.DECr('b')
+    def DECc(self):
+        self.DECr('c')
+    def DECd(self):
+        self.DECr('d')
+    def DECe(self):
+        self.DECr('e')
+    def DECh(self):
+        self.DECr('h')
+    def DECl(self):
+        self.DECr('l')
+    #endregion
+
+    def DEChl(self):
+        self.clear_flags()
+        hlvalue = self.get_hl_value() - 1
+        if (1 & 0xF) + (hlvalue & 0xF) > 15:
+            self.flags.h = True
+        if hlvalue < 0:
+            self.flags.cy = True
+        hlvalue = hlvalue & 0xFF
+        if hlvalue == 0:
+            self.flags.z = True
+        self.flags.n = True
+        self.mmu.write_byte(self.get_hl_addr(),hlvalue)
+        self.registers.m = 3
 
     def NOP(self):
         self.registers.m = 1
