@@ -1268,6 +1268,7 @@ class CPU(object):
         self.clear_flags()
         carry = value & 0xFF
         if carry:
+            #bit 0 should be set to 1 here according to the documentation, example test fails in that case
             self.flags.cy = True
         value = value & 0xFF
         if value == 0:
@@ -1286,8 +1287,38 @@ class CPU(object):
         value = value & 0xFF
         if value == 0:
             self.flags.z = True
-        self.registers.a = valuevalue = self.registers.a << 1
+        self.registers.a = value
         self.registers.m = 1
+
+    def RRCA(self):
+        value = self.registers.a
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value % 2 == 1
+        value = value >> 1
+        if carry:
+            self.flags.cy = True
+            value = value | 0x80
+        if value == 0:
+            self.flags.z = True
+        self.registers.a = value
+        self.registers.m = 1
+
+    def RRA(self):
+        value = self.registers.a
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value % 2 == 1
+        value = value >> 1
+        if carry:
+            self.flags.cy = True
+        if value == 0:
+            self.flags.z = True
+        self.registers.a = value
+        self.registers.m = 1
+
 
     def NOP(self):
         self.registers.m = 1

@@ -620,8 +620,31 @@ class TestCPUBitOperations(unittest.TestCase):
     def test_RLA(self):
         self.cpu.registers.a = 0x95
         self.cpu.flags.cy = True
-        self.cpu.RLCA()
+        self.cpu.RLA()
         assert self.cpu.registers.a == 0x2B
+        assert self.cpu.flags.cy == True
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+    def test_RRCA(self):
+        self.cpu.registers.a = 0x3B
+        self.cpu.flags.cy = False
+        self.cpu.RRCA()
+        assert self.cpu.registers.a == 0x9D
+        assert self.cpu.flags.cy == True
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+    def test_RRA(self):
+        self.cpu.registers.a = 0x81
+        self.cpu.flags.cy = False
+        self.cpu.RRA()
+        print bin(0x81)
+        print bin(self.cpu.registers.a)
+        print bin(0x40)
+        assert self.cpu.registers.a == 0x40
         assert self.cpu.flags.cy == True
         assert self.cpu.flags.z == False
         assert self.cpu.flags.h == False
