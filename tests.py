@@ -559,6 +559,29 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.h == True
         assert self.cpu.flags.n == True
 
+    def test_ADDhl_ss(self):
+        self.cpu.registers.h = 0x8A
+        self.cpu.registers.l = 0x23
+        self.cpu.registers.b = 0x06
+        self.cpu.registers.c = 0x05
+        self.cpu.ADDhl_ss('bc')
+        assert self.cpu.registers.h == 0x90
+        assert self.cpu.registers.l == 0x28
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == False
+        assert self.cpu.flags.cy == False
+
+    def test_ADDhl_ss2(self):
+        self.cpu.registers.h = 0x8A
+        self.cpu.registers.l = 0x23
+        self.cpu.ADDhl_ss('hl')
+        assert self.cpu.registers.h == 0x14
+        assert self.cpu.registers.l == 0x46
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == False
+        assert self.cpu.flags.cy == True
+
+
 class TestMMU(unittest.TestCase):
     def setUp(self):
         global gpu

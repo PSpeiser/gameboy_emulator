@@ -33,12 +33,20 @@ class CPU(object):
         self.clock = Clock()
 
     #region Utility functions
-    def get_hl_addr(self):
-        return (self.registers.h << 8) + self.registers.l
+    def get_register_pair(self,register_pair):
+        if register_pair == 'bc':
+            return (self.registers.b << 8) + self.registers.c
+        elif register_pair == 'de':
+            return (self.registers.d << 8) + self.registers.e
+        elif register_pair == 'hl':
+            return (self.registers.h << 8) + self.registers.l
+        elif register_pair == 'sp':
+            return self.registers.sp
 
-    def get_hl_value(self):
-        hlval = self.mmu.read_byte(self.get_hl_addr())
-        return hlval
+    def get_immediate_operand(self):
+        value = self.mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        return value
 
     def clear_flags(self):
         self.flags.z = False
@@ -54,7 +62,7 @@ class CPU(object):
         setattr(self.registers, r, getattr(self.registers, r2))
         self.registers.m = 1
 
-        #region LDr_r Shortcuts
+    #region LDr_r Shortcuts
 
     def LDa_a(self):
         self.LDr_r('a', 'a')
@@ -206,8 +214,7 @@ class CPU(object):
         #endregion
 
     def LDr_n(self, r):
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         setattr(self.registers, r, n)
         self.registers.m = 2
 
@@ -237,7 +244,7 @@ class CPU(object):
         #endregion
 
     def LDr_hl(self, r):
-        addr = (self.registers.h << 8) + self.registers.l
+        addr = self.get_register_pair('hl')
         value = self.mmu.read_byte(addr)
         setattr(self.registers, r, value)
         self.registers.m = 2
@@ -269,7 +276,7 @@ class CPU(object):
 
 
     def LDhl_r(self, r):
-        addr = (self.registers.h << 8) + self.registers.l
+        addr = self.get_register_pair('hl')
         value = getattr(self.registers, r)
         self.mmu.write_byte(addr, value)
         self.registers.m = 2
@@ -300,21 +307,18 @@ class CPU(object):
         #endregion
 
     def LDhl_n(self):
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
-        addr = (self.registers.h << 8) + self.registers.l
+        n = self.get_immediate_operand()
+        addr = self.get_register_pair('hl')
         self.mmu.write_byte(addr, n)
         self.registers.m = 3
 
     def LDa_bc(self):
-        addr = (self.registers.b << 8) + self.registers.c
-        value = self.mmu.read_byte(addr)
+        value = self.mmu.read_byte(self.get_register_pair('bc'))
         self.registers.a = value
         self.registers.m = 2
 
     def LDa_de(self):
-        addr = (self.registers.d << 8) + self.registers.e
-        value = self.mmu.read_byte(addr)
+        value = self.mmu.read_byte(self.get_register_pair('de'))
         self.registers.a = value
         self.registers.m = 2
 
@@ -330,14 +334,12 @@ class CPU(object):
         self.registers.m = 2
 
     def LDa_n(self):
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         self.registers.a = self.mmu.read_byte(0xFF00 + n)
         self.registers.m = 3
 
     def LDn_a(self):
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         self.mmu.write_byte(n, self.registers.a)
         self.registers.m = 3
 
@@ -354,7 +356,7 @@ class CPU(object):
         self.registers.m = 4
 
     def LDa_hli(self):
-        addr = (self.registers.h << 8) + self.registers.l
+        addr = self.get_register_pair('hl')
         self.registers.a = self.mmu.read_byte(addr)
         #increment hl
         addr += 1
@@ -363,7 +365,7 @@ class CPU(object):
         self.registers.m = 2
 
     def LDa_hld(self):
-        addr = (self.registers.h << 8) + self.registers.l
+        addr = self.get_register_pair('hl')
         self.registers.a = self.mmu.read_byte(addr)
         #decrement hl
         addr -= 1
@@ -372,17 +374,17 @@ class CPU(object):
         self.registers.m = 2
 
     def LDbc_a(self):
-        addr = (self.registers.b << 8) + self.registers.c
+        addr = self.get_register_pair('bc')
         self.mmu.write_byte(addr, self.registers.a)
         self.registers.m = 2
 
     def LDde_a(self):
-        addr = (self.registers.d << 8) + self.registers.e
+        addr = self.get_register_pair('de')
         self.mmu.write_byte(addr, self.registers.a)
         self.registers.m = 2
 
     def LDhli_a(self):
-        addr = (self.registers.h << 8) + self.registers.l
+        addr = self.get_register_pair('hl')
         self.mmu.write_byte(addr, self.registers.a)
         #increment hl
         addr += 1
@@ -391,7 +393,7 @@ class CPU(object):
         self.registers.m = 2
 
     def LDhld_a(self):
-        addr = (self.registers.h << 8) + self.registers.l
+        addr = self.get_register_pair('hl')
         self.mmu.write_byte(addr, self.registers.a)
         #decrement hl
         addr -= 1
@@ -435,7 +437,7 @@ class CPU(object):
 
 
     def LDsp_hl(self):
-        self.registers.sp = (self.registers.h << 8) + self.registers.l
+        self.registers.sp = self.get_register_pair('hl')
         self.registers.m = 2
 
     def PUSH_qq(self, qq):
@@ -506,10 +508,9 @@ class CPU(object):
 
     def LDHLsp_e(self):
         self.clear_flags()
-        value = self.mmu.read_byte(self.registers.pc)
+        value = self.get_immediate_operand()
         if value > 127:
             value = - ((~value + 1) & 0xFF)
-        self.registers.pc += 1
         value += self.registers.sp
         if value > 0xFFFF:
             self.flags.cy = True
@@ -518,8 +519,8 @@ class CPU(object):
         self.registers.m = 3
 
     def LDnn_sp(self):
-        l_adrs = self.mmu.read_byte(self.registers.pc)
-        h_adrs = self.mmu.read_byte(self.registers.pc + 1)
+        l_adrs = self.get_immediate_operand()
+        h_adrs = self.get_immediate_operand()
         self.registers.pc += 2
         addr = (h_adrs << 8) + l_adrs
         self.mmu.write_byte(addr, self.registers.sp & 0xFF)
@@ -575,8 +576,7 @@ class CPU(object):
 
     def ADDn(self):
         self.clear_flags()
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         #check for half-carry
         if (n & 0xF) + (self.registers.a & 0xF) > 15:
             self.flags.h = True
@@ -594,7 +594,7 @@ class CPU(object):
 
     def ADDa_hl(self):
         self.clear_flags()
-        hlval = self.get_hl_value()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         #check for half-carry
         if (hlval & 0xF) + (self.registers.a & 0xF) > 15:
             self.flags.h = True
@@ -661,8 +661,7 @@ class CPU(object):
     def ADCa_n(self):
         carry = self.flags.cy
         self.clear_flags()
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         if carry:
             n += 1
             #check for half-carry
@@ -684,7 +683,7 @@ class CPU(object):
         carry = self.flags.cy
         self.clear_flags()
 
-        hlval = self.get_hl_value()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         if carry:
             hlval += 1
             #check for half-carry
@@ -752,8 +751,7 @@ class CPU(object):
     def SUBn(self):
         #need to have the name of the register here NOT the bitcode
         self.clear_flags()
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         #check for half-carry
         if ((self.registers.a & 0xf) - n & 0xF) >= 15:
             self.flags.h = True
@@ -772,7 +770,7 @@ class CPU(object):
 
     def SUBhl(self):
         self.clear_flags()
-        hlval = self.get_hl_value()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         #check for half-carry
         if ((self.registers.a & 0xf) - hlval & 0xF) >= 15:
             self.flags.h = True
@@ -835,8 +833,7 @@ class CPU(object):
         a = self.registers.a
         carry = self.flags.cy
         self.clear_flags()
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         #check for half-carry
         if ((self.registers.a & 0xf) - n & 0xF) >= 15:
             self.flags.h = True
@@ -859,7 +856,7 @@ class CPU(object):
         a = self.registers.a
         carry = self.flags.cy
         self.clear_flags()
-        hlval = self.get_hl_value()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         if carry:
             hlval += 1
             #check for half-carry
@@ -911,8 +908,7 @@ class CPU(object):
 
     def ANDn(self):
         self.clear_flags()
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         self.registers.a = self.registers.a & n
         if self.registers.a == 0:
             self.flags.z = True
@@ -921,7 +917,7 @@ class CPU(object):
 
     def ANDhl(self):
         self.clear_flags()
-        hlval = self.get_hl_value()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         self.registers.a = self.registers.a & hlval
         if self.registers.a == 0:
             self.flags.z = True
@@ -961,8 +957,7 @@ class CPU(object):
 
     def ORn(self):
         self.clear_flags()
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         self.registers.a = self.registers.a | n
         if self.registers.a == 0:
             self.flags.z = True
@@ -970,7 +965,7 @@ class CPU(object):
 
     def ORhl(self):
         self.clear_flags()
-        hlval = self.get_hl_value()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         self.registers.a = self.registers.a | hlval
         if self.registers.a == 0:
             self.flags.z = True
@@ -1009,8 +1004,7 @@ class CPU(object):
 
     def XORn(self):
         self.clear_flags()
-        n = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        n = self.get_immediate_operand()
         self.registers.a = self.registers.a ^ n
         if self.registers.a == 0:
             self.flags.z = True
@@ -1018,7 +1012,7 @@ class CPU(object):
 
     def XORhl(self):
         self.clear_flags()
-        hlval = self.get_hl_value()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         self.registers.a = self.registers.a ^ hlval
         if self.registers.a == 0:
             self.flags.z = True
@@ -1067,8 +1061,7 @@ class CPU(object):
 
     def CPn(self):
         self.clear_flags()
-        value = self.mmu.read_byte(self.registers.pc)
-        self.registers.pc += 1
+        value = self.get_immediate_operand()
         result = self.registers.a - value
         if result == 0:
             self.flags.z = True
@@ -1084,7 +1077,7 @@ class CPU(object):
 
     def CPhl(self):
         self.clear_flags()
-        value = self.get_hl_value()
+        value = self.mmu.read_byte(self.get_register_pair('hl'))
         result = self.registers.a - value
         if result == 0:
             self.flags.z = True
@@ -1132,7 +1125,7 @@ class CPU(object):
 
     def INChl(self):
         self.clear_flags()
-        hlvalue = self.get_hl_value() + 1
+        hlvalue = self.mmu.read_byte(self.get_register_pair('hl')) + 1
         if (1 & 0xF) + (hlvalue & 0xF) > 15:
             self.flags.h = True
         if hlvalue > 255:
@@ -1140,7 +1133,7 @@ class CPU(object):
         hlvalue = hlvalue & 0xFF
         if hlvalue == 0:
             self.flags.z = True
-        self.mmu.write_byte(self.get_hl_addr(),hlvalue)
+        self.mmu.write_byte(self.get_register_pair('hl'),hlvalue)
 
     def DECr(self,r):
         self.clear_flags()
@@ -1179,7 +1172,7 @@ class CPU(object):
 
     def DEChl(self):
         self.clear_flags()
-        hlvalue = self.get_hl_value() - 1
+        hlvalue = self.mmu.read_byte(self.get_register_pair('hl')) - 1
         if (1 & 0xF) + (hlvalue & 0xF) > 15:
             self.flags.h = True
         if hlvalue < 0:
@@ -1188,8 +1181,32 @@ class CPU(object):
         if hlvalue == 0:
             self.flags.z = True
         self.flags.n = True
-        self.mmu.write_byte(self.get_hl_addr(),hlvalue)
+        self.mmu.write_byte(self.get_register_pair('hl'),hlvalue)
         self.registers.m = 3
+
+    def ADDhl_ss(self,ss):
+        self.clear_flags()
+        hlvalue = self.get_register_pair('hl')
+        ssvalue = self.get_register_pair(ss)
+        value = hlvalue + ssvalue
+        if (ssvalue & 0xFF) + (hlvalue & 0xFF) > 15:
+            self.flags.h = True
+        if value > 0xFFFF:
+            self.flags.cy = True
+        value = value & 0xFFFF
+        self.registers.h = value >> 8
+        self.registers.l = value & 0xFF
+
+    def ADDhl_bc(self):
+        self.ADDhl_ss('bc')
+    def ADDhl_de(self):
+        self.ADDhl_ss('de')
+    def ADDhl_hl(self):
+        self.ADDhl_ss('hl')
+    def ADDhl_sp(self):
+        self.ADDhl_ss('sp')
+
+
 
     def NOP(self):
         self.registers.m = 1
