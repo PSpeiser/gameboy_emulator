@@ -415,9 +415,9 @@ class CPU(object):
         h_adrs = mmu.read_byte(self.registers.pc + 1)
         self.registers.pc += 2
         addr = (h_adrs << 8) + l_adrs
-        print hex(addr)
         mmu.write_byte(addr,self.registers.sp & 0xFF)
         mmu.write_byte(addr + 1,self.registers.sp >> 8)
+        self.registers.m = 5
 
     #endregion
 
@@ -439,7 +439,6 @@ class CPU(object):
         if self.registers.a == 0:
             self.flags.z = True
         self.registers.m = 1
-        self.registers.t = 4
 
     def ADDa(self):
         self.ADDr('a')
@@ -474,7 +473,26 @@ class CPU(object):
         if self.registers.a == 0:
             self.flags.z = True
         self.registers.m = 2
-        self.registers.t = 8
+
+    def ADDa_hl(self):
+        self.clear_flags()
+        hladdr = (self.registers.h << 8) + self.registers.l
+        hlval = mmu.read_byte(hladdr)
+        #check for half-carry
+        if (hlval & 0xF) + (self.registers.a & 0xF) > 15:
+            self.flags.h = True
+            #add immediate operand n to register a
+        self.registers.a += hlval
+        #check for carry
+        if self.registers.a > 255:
+            self.flags.cy = True
+            #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.registers.m = 2
+
 
     #endregion
 
