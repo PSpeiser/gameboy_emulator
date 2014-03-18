@@ -1,5 +1,5 @@
 class MMU(object):
-    def __init__(self):
+    def __init__(self,cpu=None,gpu=None):
         self.in_bios = True
         self.bios = [0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
                      0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E, 0xFC, 0xE0,
@@ -21,14 +21,15 @@ class MMU(object):
         self.wram = [0 for i in range(8192)]
         self.eram = [0 for i in range(8192)]
         self.zram = [0 for i in range(8192)] # guessing the size here, probably wrong
-
+        self.gpu = gpu
+        self.cpu = cpu
 
     def read_byte(self, addr):
         if addr < 0x1000:
             if self.in_bios:
                 if addr < 0x0100:
                     return self.bios[addr]
-                elif cpu.registers.pc == 0x0100:
+                elif self.cpu.registers.pc == 0x0100:
                     self.in_bios = False
                     #return nothing here ?
             return self.rom[addr]
@@ -40,7 +41,7 @@ class MMU(object):
             return self.rom[addr]
         #VRAM
         elif 0x8000 >= addr < 0xA000:
-            return gpu.vram[addr & 0x1FFF]
+            return self.gpu.vram[addr & 0x1FFF]
 
         #External RAM 8k
         elif 0xA000 >= addr < 0xC000:
@@ -61,7 +62,7 @@ class MMU(object):
                 return self.wram[addr & 0x1FFF]
             elif area == 0xE00:
                 if addr < 0xFEA0:
-                    return gpu.oam[addr & 0xFF]
+                    return self.gpu.oam[addr & 0xFF]
                 else:
                     return 0
             elif area == 0xF00:
@@ -92,7 +93,7 @@ class MMU(object):
             self.rom[addr] = value
         #VRAM
         elif 0x8000 >= addr < 0xA000:
-            gpu.vram[addr & 0x1FFF] = value
+            self.gpu.vram[addr & 0x1FFF] = value
 
         #External RAM 8k
         elif 0xA000 >= addr < 0xC000:
@@ -113,7 +114,7 @@ class MMU(object):
                 self.wram[addr & 0x1FFF] = value
             elif area == 0xE00:
                 if addr < 0xFEA0:
-                    gpu.oam[addr & 0xFF] = value
+                    self.gpu.oam[addr & 0xFF] = value
                 else:
                     raise Exception()
             elif area == 0xF00:

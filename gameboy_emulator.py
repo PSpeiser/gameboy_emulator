@@ -6,6 +6,6 @@ from gpu import GPU
 
 cpu = CPU()
 gpu = GPU()
-mmu = MMU()
+mmu = MMU(cpu=cpu,gpu=gpu)
 cpu.mmu = mmu
 
