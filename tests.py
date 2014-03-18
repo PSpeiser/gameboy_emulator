@@ -305,7 +305,7 @@ class TestCPUArithmetic(unittest.TestCase):
         self.cpu.registers.a = 0xE1
         self.cpu.flags.cy = True
         self.cpu.registers.pc = 0x1000
-        self.mmu.write_byte(0x1000,0x3B)
+        self.mmu.write_byte(0x1000, 0x3B)
         self.cpu.ADCa_n()
         assert self.cpu.registers.a == 0x1D
         assert self.cpu.flags.z == False
@@ -317,7 +317,7 @@ class TestCPUArithmetic(unittest.TestCase):
         self.cpu.registers.a = 0xE1
         self.cpu.registers.h = 0x80
         self.cpu.registers.l = 0x00
-        self.mmu.write_byte(0x8000,0x1E)
+        self.mmu.write_byte(0x8000, 0x1E)
         self.cpu.flags.cy = True
         self.cpu.ADCa_hl()
         assert self.cpu.registers.a == 0x00
@@ -357,7 +357,7 @@ class TestCPUArithmetic(unittest.TestCase):
 
     def test_SUBn(self):
         self.cpu.registers.pc = 0x1000
-        self.mmu.write_byte(0x1000,0x0F)
+        self.mmu.write_byte(0x1000, 0x0F)
         self.cpu.registers.a = 0x3E
         self.cpu.SUBn()
         assert self.cpu.registers.a == 0x2F
@@ -369,7 +369,7 @@ class TestCPUArithmetic(unittest.TestCase):
     def test_SUBhl(self):
         self.cpu.registers.h = 0x80
         self.cpu.registers.l = 0x00
-        self.mmu.write_byte(0x8000,0x40)
+        self.mmu.write_byte(0x8000, 0x40)
         self.cpu.registers.a = 0x3E
         self.cpu.SUBhl()
         assert self.cpu.registers.a == 0xFE
@@ -391,7 +391,7 @@ class TestCPUArithmetic(unittest.TestCase):
 
     def test_SBCa_n(self):
         self.cpu.registers.pc = 0x1000
-        self.mmu.write_byte(0x1000,0x3A)
+        self.mmu.write_byte(0x1000, 0x3A)
         self.cpu.registers.a = 0x3B
         self.cpu.flags.cy = True
         self.cpu.SBCa_n()
@@ -404,7 +404,7 @@ class TestCPUArithmetic(unittest.TestCase):
     def test_SBCa_hl(self):
         self.cpu.registers.h = 0x80
         self.cpu.registers.l = 0x00
-        self.mmu.write_byte(0x8000,0x4F)
+        self.mmu.write_byte(0x8000, 0x4F)
         self.cpu.registers.a = 0x3B
         self.cpu.flags.cy = True
         self.cpu.SBCa_hl()
@@ -427,7 +427,7 @@ class TestCPUArithmetic(unittest.TestCase):
     def test_ANDn(self):
         self.cpu.registers.a = 0x5A
         self.cpu.registers.pc = 0x1000
-        self.mmu.write_byte(0x1000,0x38)
+        self.mmu.write_byte(0x1000, 0x38)
         self.cpu.ANDn()
         assert self.cpu.registers.a == 0x18
         assert self.cpu.flags.z == False
@@ -439,7 +439,7 @@ class TestCPUArithmetic(unittest.TestCase):
         self.cpu.registers.a = 0x5A
         self.cpu.registers.h = 0x80
         self.cpu.registers.l = 0x00
-        self.mmu.write_byte(0x8000,0x00)
+        self.mmu.write_byte(0x8000, 0x00)
         self.cpu.ANDhl()
         assert self.cpu.registers.a == 0x00
         assert self.cpu.flags.z == True
@@ -456,7 +456,7 @@ class TestCPUArithmetic(unittest.TestCase):
     def test_ORn(self):
         self.cpu.registers.a = 0x5A
         self.cpu.registers.pc = 0x1000
-        self.mmu.write_byte(0x1000,0x03)
+        self.mmu.write_byte(0x1000, 0x03)
         self.cpu.ORn()
         assert self.cpu.registers.a == 0x5B
         assert self.cpu.flags.z == False
@@ -465,10 +465,63 @@ class TestCPUArithmetic(unittest.TestCase):
         self.cpu.registers.a = 0x5A
         self.cpu.registers.h = 0x80
         self.cpu.registers.l = 0x00
-        self.mmu.write_byte(0x8000,0x0F)
+        self.mmu.write_byte(0x8000, 0x0F)
         self.cpu.ORhl()
         assert self.cpu.registers.a == 0x5F
         assert self.cpu.flags.z == False
+
+    def test_XORr(self):
+        self.cpu.registers.a = 0xFF
+        self.cpu.XORr('a')
+        assert self.cpu.registers.a == 0x00
+        assert self.cpu.flags.z == True
+
+    def test_XORn(self):
+        self.cpu.registers.a = 0xFF
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000, 0x0F)
+        self.cpu.XORn()
+        assert self.cpu.registers.a == 0xF0
+        assert self.cpu.flags.z == False
+
+    def test_XORhl(self):
+        self.cpu.registers.a = 0xFF
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000, 0x8A)
+        self.cpu.XORhl()
+        assert self.cpu.registers.a == 0x75
+        assert self.cpu.flags.z == False
+
+    def test_CPr(self):
+        self.cpu.registers.a = 0x3C
+        self.cpu.registers.b = 0x2F
+        self.cpu.CPr('b')
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == False
+
+    def test_CPn(self):
+        self.cpu.registers.a = 0x3C
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000, 0x3C)
+        self.cpu.CPn()
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == False
+
+    def test_CPhl(self):
+        self.cpu.registers.a = 0x3C
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000, 0x40)
+        self.cpu.CPhl()
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == True
 
 
 class TestMMU(unittest.TestCase):
