@@ -6,6 +6,7 @@ class TestCPUIO(unittest.TestCase):
         self.cpu = gameboy_emulator.cpu
         self.mmu = gameboy_emulator.mmu
 
+    #region 8-Bit Transfer and Input/Output Instructions
     def test_LDr_r(self):
         self.cpu.registers.a = 0x00
         self.cpu.registers.b = 0xFF
@@ -155,6 +156,9 @@ class TestCPUIO(unittest.TestCase):
         assert self.cpu.registers.h == 0x3F
         assert self.cpu.registers.l == 0xFF
 
+    #endregion
+
+    #region 16-Bit Transfer Instructions
     def test_LDdd_nn(self):
         self.cpu.registers.pc = 0x1000
         self.mmu.write_word(0x1000,0x3A5B)
@@ -182,8 +186,6 @@ class TestCPUIO(unittest.TestCase):
         self.mmu.write_byte(0xFFFC,0x5F)
         self.mmu.write_byte(0xFFFD,0x3C)
         self.cpu.POP_qq('bc')
-        print hex(self.cpu.registers.b)
-        print hex(self.cpu.registers.c)
         assert self.cpu.registers.b == 0x3C
         assert self.cpu.registers.c == 0x5F
         assert self.cpu.registers.sp == 0xFFFE
@@ -198,6 +200,26 @@ class TestCPUIO(unittest.TestCase):
         assert self.cpu.registers.e == self.cpu.registers.c
         assert self.cpu.registers.sp == 0xFFFE
 
+    def test_LDHLsp_e(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,2)
+        self.cpu.registers.sp = 0xFFF8
+        self.cpu.LDHLsp_e()
+        assert self.cpu.registers.h == 0xFF
+        assert self.cpu.registers.l == 0xFA
+        assert self.cpu.flags.cy == 0
+        assert self.cpu.flags.h == 0
+        assert self.cpu.flags.n == 0
+        assert self.cpu.flags.z == 0
+
+    def test_LDnn_sp(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_word(0x1000,0xC100)
+        self.cpu.LDnn_sp()
+        assert self.mmu.read_byte(0xC100) == 0xF8
+        assert self.mmu.read_byte(0xC101) == 0xFF
+
+    #endregion
 
 
 

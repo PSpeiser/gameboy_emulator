@@ -16,12 +16,10 @@ class CPU(object):
                 self.pc = 0 #16 bit registers
                 self.sp = 0
                 self.m = 0 #clock for the last instructions
-                self.t = 0
 
         self.registers = Registers()
 
         class Flags(object):
-            self.cy = False
             self.z = False
             self.n = False
             self.h = False
@@ -40,6 +38,7 @@ class CPU(object):
         self.flags.h = False
         self.flags.cy = False
 
+    #region 8-Bit Transfer and Input/Output Instructions
     def LDr_r(self,r,r2):
         setattr(self.registers,r,getattr(self.registers,r2))
         self.registers.m = 1
@@ -162,6 +161,9 @@ class CPU(object):
         self.registers.l = addr & 0xFF
         self.registers.m = 2
 
+    #endregion
+
+    #region 16-Bit Transfer Instructions
     def LDdd_nn(self,dd):
         nn = mmu.read_word(self.registers.pc)
         if dd == 'bc':
@@ -208,6 +210,7 @@ class CPU(object):
         mmu.write_byte(self.registers.sp - 1,qqH)
         mmu.write_byte(self.registers.sp - 2,qqL)
         self.registers.sp -= 2
+        self.registers.m = 4
 
     def PUSH_bc(self):
         self.PUSH_qq('bc')
@@ -234,6 +237,7 @@ class CPU(object):
             self.registers.a = qqHval
             self.registers.f = qqLval
         self.registers.sp += 2
+        self.registers.m = 3
 
     def POP_bc(self):
         self.POP_qq('bc')
@@ -243,6 +247,30 @@ class CPU(object):
         self.POP_qq('hl')
     def POP_af(self):
         self.POP_qq('af')
+
+    def LDHLsp_e(self):
+        self.clear_flags()
+        value = mmu.read_byte(self.registers.pc)
+        if value > 127:
+            value = - ((~value+1)&0xFF)
+        self.registers.pc += 1
+        value += self.registers.sp
+        if value > 0xFFFF:
+            self.flags.cy = True
+        self.registers.h = (value >> 8) & 0xFF
+        self.registers.l = value & 0xFF
+        self.registers.m = 3
+
+    def LDnn_sp(self):
+        l_adrs = mmu.read_byte(self.registers.pc)
+        h_adrs = mmu.read_byte(self.registers.pc + 1)
+        self.registers.pc += 2
+        addr = (h_adrs << 8) + l_adrs
+        print hex(addr)
+        mmu.write_byte(addr,self.registers.sp & 0xFF)
+        mmu.write_byte(addr + 1,self.registers.sp >> 8)
+
+    #endregion
 
     def ADDr(self, r):
         #need to have the name of the register here NOT the bitcode
