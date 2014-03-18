@@ -169,6 +169,36 @@ class TestCPUIO(unittest.TestCase):
         self.cpu.LDsp_hl()
         assert self.cpu.registers.sp == 0xFFFF
 
+    def test_PUSH_qq(self):
+        self.cpu.registers.sp = 0xFFFE
+        self.cpu.registers.b = 0x12
+        self.cpu.registers.c = 0x34
+        self.cpu.PUSH_qq('bc')
+        assert self.mmu.read_word(0xFFFC) == 0x1234
+        assert self.cpu.registers.sp == 0xFFFC
+
+    def test_POP_qq(self):
+        self.cpu.registers.sp = 0xFFFC
+        self.mmu.write_byte(0xFFFC,0x5F)
+        self.mmu.write_byte(0xFFFD,0x3C)
+        self.cpu.POP_qq('bc')
+        print hex(self.cpu.registers.b)
+        print hex(self.cpu.registers.c)
+        assert self.cpu.registers.b == 0x3C
+        assert self.cpu.registers.c == 0x5F
+        assert self.cpu.registers.sp == 0xFFFE
+
+    def test_PUSH_POP(self):
+        self.cpu.registers.sp = 0xFFFE
+        self.cpu.registers.b = 0x12
+        self.cpu.registers.c = 0x34
+        self.cpu.PUSH_qq('bc')
+        self.cpu.POP_qq('de')
+        assert self.cpu.registers.d == self.cpu.registers.b
+        assert self.cpu.registers.e == self.cpu.registers.c
+        assert self.cpu.registers.sp == 0xFFFE
+
+
 
 
 

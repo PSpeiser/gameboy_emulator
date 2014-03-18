@@ -192,6 +192,58 @@ class CPU(object):
         self.registers.sp = (self.registers.h << 8) + self.registers.l
         self.registers.m = 2
 
+    def PUSH_qq(self,qq):
+        if qq == 'bc':
+            qqH = self.registers.b
+            qqL = self.registers.c
+        elif qq == 'de':
+            qqH = self.registers.d
+            qqL = self.registers.e
+        elif qq == 'hl':
+            qqH = self.registers.h
+            qqL = self.registers.l
+        elif qq =='af':
+            qqH = self.registers.a
+            qqL = self.registers.f
+        mmu.write_byte(self.registers.sp - 1,qqH)
+        mmu.write_byte(self.registers.sp - 2,qqL)
+        self.registers.sp -= 2
+
+    def PUSH_bc(self):
+        self.PUSH_qq('bc')
+    def PUSH_de(self):
+        self.PUSH_qq('de')
+    def PUSH_hl(self):
+        self.PUSH_qq('hl')
+    def PUSH_af(self):
+        self.PUSH_qq('af')
+
+    def POP_qq(self,qq):
+        qqLval = mmu.read_byte(self.registers.sp)
+        qqHval = mmu.read_byte(self.registers.sp + 1)
+        if qq == 'bc':
+            self.registers.b = qqHval
+            self.registers.c = qqLval
+        elif qq == 'de':
+            self.registers.d = qqHval
+            self.registers.e = qqLval
+        elif qq == 'hl':
+            self.registers.h = qqHval
+            self.registers.l = qqLval
+        elif qq == 'af':
+            self.registers.a = qqHval
+            self.registers.f = qqLval
+        self.registers.sp += 2
+
+    def POP_bc(self):
+        self.POP_qq('bc')
+    def POP_de(self):
+        self.POP_qq('de')
+    def POP_hl(self):
+        self.POP_qq('hl')
+    def POP_af(self):
+        self.POP_qq('af')
+
     def ADDr(self, r):
         #need to have the name of the register here NOT the bitcode
         self.clear_flags()
