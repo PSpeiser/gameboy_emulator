@@ -33,11 +33,21 @@ class CPU(object):
 
         self.clock = Clock()
 
+    #region Utility functions
+
+    def get_hl_value(self):
+        hladdr = (self.registers.h << 8) + self.registers.l
+        hlval = mmu.read_byte(hladdr)
+        return hlval
+
     def clear_flags(self):
         self.flags.z = False
         self.flags.n = False
         self.flags.h = False
         self.flags.cy = False
+
+
+    #endregion
 
     #region 8-Bit Transfer and Input/Output Instructions
     def LDr_r(self,r,r2):
@@ -487,8 +497,7 @@ class CPU(object):
 
     def ADDa_hl(self):
         self.clear_flags()
-        hladdr = (self.registers.h << 8) + self.registers.l
-        hlval = mmu.read_byte(hladdr)
+        hlval = self.get_hl_value()
         #check for half-carry
         if (hlval & 0xF) + (self.registers.a & 0xF) > 15:
             self.flags.h = True
@@ -570,8 +579,8 @@ class CPU(object):
     def ADCa_hl(self):
         carry = self.flags.cy
         self.clear_flags()
-        hladdr = (self.registers.h << 8) + self.registers.l
-        hlval = mmu.read_byte(hladdr)
+
+        hlval = self.get_hl_value()
         if carry:
             hlval += 1
         #check for half-carry
@@ -652,8 +661,7 @@ class CPU(object):
 
     def SUBhl(self):
         self.clear_flags()
-        hladdr = (self.registers.h << 8) + self.registers.l
-        hlval = mmu.read_byte(hladdr)
+        hlval = self.get_hl_value()
         #check for half-carry
         if ((self.registers.a & 0xf) - hlval & 0xF) >= 15:
             self.flags.h = True
@@ -734,8 +742,7 @@ class CPU(object):
         a = self.registers.a
         carry = self.flags.cy
         self.clear_flags()
-        hladdr = (self.registers.h << 8) + self.registers.l
-        hlval = mmu.read_byte(hladdr)
+        hlval = self.get_hl_value()
         if carry:
             hlval += 1
         #check for half-carry
@@ -753,12 +760,55 @@ class CPU(object):
         self.flags.n = True
         self.registers.m = 2
 
+    def ANDr(self,r):
+        self.clear_flags()
+        self.registers.a = self.registers.a & getattr(self.registers,r)
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.h = True
+        self.registers.m = 1
+
+    #region ANDr Shortcuts
+    def ANDa(self):
+        self.ANDr('a')
+    def ANDb(self):
+        self.ANDr('b')
+    def ANDc(self):
+        self.ANDr('c')
+    def ANDd(self):
+        self.ANDr('d')
+    def ANDe(self):
+        self.ANDr('e')
+    def ANDh(self):
+        self.ANDr('h')
+    def ANDl(self):
+        self.ANDr('l')
 
     #endregion
 
+    def ANDn(self):
+        self.clear_flags()
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        self.registers.a = self.registers.a & n
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.h = True
+        self.registers.m += 2
+
+    def ANDhl(self):
+        self.clear_flags()
+        hlval = self.get_hl_value()
+        self.registers.a = self.registers.a & hlval
+        if self.registers.a == 0:
+            self.flags.z = True
+        temp = ((self.registers.a&0xf) + (hlval&0xf))&0x10
+        self.flags.h = True
+        self.registers.m += 2
+
+
     def NOP(self):
         self.registers.m = 1
-        self.registers.t = 4
 
 
 class MMU(object):
