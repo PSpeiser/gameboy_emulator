@@ -602,6 +602,30 @@ class TestCPUArithmetic(unittest.TestCase):
         self.cpu.DEC_ss('de')
         assert self.cpu.get_register_pair('de') == 0x235E
 
+class TestCPUBitOperations(unittest.TestCase):
+    def setUp(self):
+        self.cpu = gameboy_emulator.cpu
+        self.mmu = gameboy_emulator.mmu
+
+    def test_RLCA(self):
+        self.cpu.registers.a = 0x85
+        self.cpu.flags.cy = False
+        self.cpu.RLCA()
+        assert self.cpu.registers.a == 0x0A
+        assert self.cpu.flags.cy == True
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+    def test_RLA(self):
+        self.cpu.registers.a = 0x95
+        self.cpu.flags.cy = True
+        self.cpu.RLCA()
+        assert self.cpu.registers.a == 0x2B
+        assert self.cpu.flags.cy == True
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
 
 class TestMMU(unittest.TestCase):
     def setUp(self):

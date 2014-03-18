@@ -1208,6 +1208,7 @@ class CPU(object):
             self.flags.cy = True
         value = value & 0xFFFF
         self.set_register_pair('hl',value)
+        self.registers.m = 2
 
     def ADDhl_bc(self):
         self.ADDhl_ss('bc')
@@ -1230,10 +1231,12 @@ class CPU(object):
         if value == 0:
             self.flags.z = True
         self.registers.sp = value
+        self.registers.m = 4
 
     def INC_ss(self,ss):
         self.clear_flags()
         self.set_register_pair(ss,self.get_register_pair(ss) + 1)
+        self.registers.m = 2
 
     def INC_bc(self):
         self.INC_ss('bc')
@@ -1247,6 +1250,7 @@ class CPU(object):
     def DEC_ss(self,ss):
         self.clear_flags()
         self.set_register_pair(ss,self.get_register_pair(ss) - 1)
+        self.registers.m = 2
 
     def DEC_bc(self):
         self.DEC_ss('bc')
@@ -1256,6 +1260,34 @@ class CPU(object):
         self.DEC_ss('hl')
     def DEC_sp(self):
         self.DEC_ss('sp')
+
+    def RLCA(self):
+        value = self.registers.a << 1
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value & 0xFF
+        if carry:
+            self.flags.cy = True
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        self.registers.a = value
+        self.registers.m = 1
+
+    def RLA(self):
+        value = self.registers.a << 1
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value & 0xFF
+        if carry:
+            self.flags.cy = True
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        self.registers.a = valuevalue = self.registers.a << 1
+        self.registers.m = 1
 
     def NOP(self):
         self.registers.m = 1
