@@ -523,6 +523,41 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.n == True
         assert self.cpu.flags.cy == True
 
+    def test_INCr(self):
+        self.cpu.registers.a = 0xFF
+        self.cpu.INCr('a')
+        assert self.cpu.registers.a == 0x00
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == False
+
+    def test_INChl(self):
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000,0x50)
+        self.cpu.INChl()
+        assert self.mmu.read_byte(0x8000) == 0x51
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+    def test_DECr(self):
+        self.cpu.registers.l = 0x01
+        self.cpu.DECr('l')
+        assert self.cpu.registers.l == 0x00
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == True
+
+    def test_DEChl(self):
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000,0x00)
+        self.cpu.DEChl()
+        assert self.mmu.read_byte(0x8000) == 0xFF
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == True
 
 class TestMMU(unittest.TestCase):
     def setUp(self):
