@@ -20,10 +20,11 @@ class CPU(object):
         self.registers = Registers()
 
         class Flags(object):
-            self.z = False
-            self.n = False
-            self.h = False
-            self.cy = False
+            def __init__(self):
+                self.z = False
+                self.n = False
+                self.h = False
+                self.cy = False
 
         self.flags = Flags()
 
@@ -329,6 +330,7 @@ class CPU(object):
         self.registers.pc += 2
         self.registers.m = 3
 
+    #region LDdd_nn Shortcuts
     def LDbc_nn(self):
         self.LDdd_nn('bc')
     def LDde_nn(self):
@@ -337,6 +339,7 @@ class CPU(object):
         self.LDdd_nn('hl')
     def LDsp_nn(self):
         self.LDdd_nn('sp')
+    #endregion
 
 
     def LDsp_hl(self):
@@ -361,6 +364,7 @@ class CPU(object):
         self.registers.sp -= 2
         self.registers.m = 4
 
+    #region PUSH Shortcuts
     def PUSH_bc(self):
         self.PUSH_qq('bc')
     def PUSH_de(self):
@@ -369,6 +373,7 @@ class CPU(object):
         self.PUSH_qq('hl')
     def PUSH_af(self):
         self.PUSH_qq('af')
+    #endregion
 
     def POP_qq(self,qq):
         qqLval = mmu.read_byte(self.registers.sp)
@@ -388,6 +393,7 @@ class CPU(object):
         self.registers.sp += 2
         self.registers.m = 3
 
+    #region POP Shortcuts
     def POP_bc(self):
         self.POP_qq('bc')
     def POP_de(self):
@@ -396,6 +402,7 @@ class CPU(object):
         self.POP_qq('hl')
     def POP_af(self):
         self.POP_qq('af')
+    #endregion
 
     def LDHLsp_e(self):
         self.clear_flags()
@@ -422,6 +429,8 @@ class CPU(object):
     #endregion
 
     #region 8-Bit Arithmetic and Logical Operation Instructions
+
+    #region Addition
     def ADDr(self, r):
         #need to have the name of the register here NOT the bitcode
         self.clear_flags()
@@ -440,6 +449,7 @@ class CPU(object):
             self.flags.z = True
         self.registers.m = 1
 
+    #region ADDr Shortcuts
     def ADDa(self):
         self.ADDr('a')
     def ADDb(self):
@@ -454,6 +464,7 @@ class CPU(object):
         self.ADDr('h')
     def ADDl(self):
         self.ADDr('l')
+    #endregion
 
     def ADDn(self):
         self.clear_flags()
@@ -491,6 +502,155 @@ class CPU(object):
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
+        self.registers.m = 2
+
+    def ADCa_r(self,r):
+        #need to have the name of the register here NOT the bitcode
+        carry = self.flags.cy
+        self.clear_flags()
+        value = getattr(self.registers, r)
+
+        #check for half-carry
+        if (value & 0xF) + (self.registers.a & 0xf) > 15:
+            self.flags.h = True
+            #add register r to register a
+        self.registers.a += value
+        if carry:
+            self.registers.a += 1
+        #add carry
+        #check for carry
+        if self.registers.a > 255:
+            self.flags.cy = True
+            #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.registers.m = 1
+
+    #region ADca Shortcuts
+    def ADCa_a(self):
+        self.ADCa_r('a')
+    def ADCa_b(self):
+        self.ADCa_r('b')
+    def ADCa_c(self):
+        self.ADCa_r('c')
+    def ADCa_d(self):
+        self.ADCa_r('d')
+    def ADCa_e(self):
+        self.ADCa_r('e')
+    def ADCa_h(self):
+        self.ADCa_r('h')
+    def ADCa_l(self):
+        self.ADCa_r('l')
+    #endregion
+
+    def ADCa_n(self):
+        carry = self.flags.cy
+        self.clear_flags()
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        if carry:
+            n += 1
+        #check for half-carry
+        if (n & 0xF) + (self.registers.a & 0xF) > 15:
+            self.flags.h = True
+            #add immediate operand n to register a
+        self.registers.a += n
+        #check for carry
+        if self.registers.a > 255:
+            self.flags.cy = True
+            #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.registers.m = 2
+
+    def ADCa_hl(self):
+        carry = self.flags.cy
+        self.clear_flags()
+        hladdr = (self.registers.h << 8) + self.registers.l
+        hlval = mmu.read_byte(hladdr)
+        if carry:
+            hlval += 1
+        #check for half-carry
+        if (hlval & 0xF) + (self.registers.a & 0xF) > 15:
+            self.flags.h = True
+            #add immediate operand n to register a
+        self.registers.a += hlval
+        #check for carry
+        if self.registers.a > 255:
+            self.flags.cy = True
+            #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.registers.m = 2
+
+    #endregion Addition
+
+    #region Subtraction
+
+    def SUBr(self,r):
+        #need to have the name of the register here NOT the bitcode
+        self.clear_flags()
+        #check for half-carry
+        temp = ((self.registers.a & 0xf) - getattr(self.registers, r) & 0xF)
+        if ((self.registers.a & 0xf) - getattr(self.registers, r) & 0xF) >= 15:
+            self.flags.h = True
+        #subtract register r from register a
+        self.registers.a -= getattr(self.registers, r)
+        #check for carry
+        if self.registers.a < 0:
+            self.flags.cy = True
+        #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.n = True
+        self.registers.m = 1
+
+    def SUBn(self):
+        #need to have the name of the register here NOT the bitcode
+        self.clear_flags()
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        #check for half-carry
+        if ((self.registers.a & 0xf) - n & 0xF) >= 15:
+            self.flags.h = True
+        #subtract immediate operand n from register a
+        self.registers.a -= n
+        #check for carry
+        if self.registers.a < 0:
+            self.flags.cy = True
+        #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.n = True
+        self.registers.m = 2
+
+    def SUBhl(self):
+        self.clear_flags()
+        hladdr = (self.registers.h << 8) + self.registers.l
+        hlval = mmu.read_byte(hladdr)
+        #check for half-carry
+        if ((self.registers.a & 0xf) - hlval & 0xF) >= 15:
+            self.flags.h = True
+        self.registers.a -= hlval
+        #check for carry
+        if self.registers.a < 0:
+            self.flags.cy = True
+        #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.n = True
         self.registers.m = 2
 
 

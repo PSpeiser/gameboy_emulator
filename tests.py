@@ -291,6 +291,95 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.n == False
         assert self.cpu.flags.cy == False
 
+    def test_ADCa_r(self):
+        self.cpu.registers.a = 0xE1
+        self.cpu.registers.e = 0x0F
+        self.cpu.flags.cy = True
+        self.cpu.ADCa_r('e')
+        assert self.cpu.registers.a == 0xF1
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.cy == False
+
+    def test_ADCa_n(self):
+        self.cpu.registers.a = 0xE1
+        self.cpu.flags.cy = True
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,0x3B)
+        self.cpu.ADCa_n()
+        assert self.cpu.registers.a == 0x1D
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.cy == True
+
+
+    def test_ADCa_hl(self):
+        self.cpu.registers.a = 0xE1
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000,0x1E)
+        self.cpu.flags.cy = True
+        self.cpu.ADCa_hl()
+        assert self.cpu.registers.a == 0x00
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.cy == True
+
+    def test_SUBr(self):
+        self.cpu.registers.a = 0x3E
+        self.cpu.registers.e = 0x3E
+        self.cpu.SUBr('e')
+        assert self.cpu.registers.a == 0
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == False
+
+    def test_SUBr_halfcarry(self):
+        self.cpu.registers.a = 0x10
+        self.cpu.registers.b = 0x01
+        self.cpu.SUBr('b')
+        assert self.cpu.registers.a == 0x0F
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == False
+
+    def test_SUBr_carry(self):
+        self.cpu.registers.a = 0x00
+        self.cpu.registers.b = 0x01
+        self.cpu.SUBr('b')
+        assert self.cpu.registers.a == 0xFF
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == True
+
+    def test_SUBn(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,0x0F)
+        self.cpu.registers.a = 0x3E
+        self.cpu.SUBn()
+        assert self.cpu.registers.a == 0x2F
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == False
+
+    def test_SUBhl(self):
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000,0x40)
+        self.cpu.registers.a = 0x3E
+        self.cpu.SUBhl()
+        assert self.cpu.registers.a == 0xFE
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == True
+
+
+
 
 class TestMMU(unittest.TestCase):
     def setUp(self):
