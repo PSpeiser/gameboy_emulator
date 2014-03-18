@@ -378,6 +378,41 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.n == True
         assert self.cpu.flags.cy == True
 
+    def test_SBCr(self):
+        self.cpu.registers.h = 0x2A
+        self.cpu.registers.a = 0x3B
+        self.cpu.flags.cy = True
+        self.cpu.SBCa_r('h')
+        assert self.cpu.registers.a == 0x10
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == False
+
+    def test_SBCn(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,0x3A)
+        self.cpu.registers.a = 0x3B
+        self.cpu.flags.cy = True
+        self.cpu.SBCa_n()
+        assert self.cpu.registers.a == 0x00
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == False
+
+    def test_SBCr(self):
+        self.cpu.registers.h = 0x80
+        self.cpu.registers.l = 0x00
+        self.mmu.write_byte(0x8000,0x4F)
+        self.cpu.registers.a = 0x3B
+        self.cpu.flags.cy = True
+        self.cpu.SBCa_hl()
+        assert self.cpu.registers.a == 0xEB
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.cy == True
 
 
 

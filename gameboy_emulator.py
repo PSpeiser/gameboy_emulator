@@ -597,7 +597,6 @@ class CPU(object):
         #need to have the name of the register here NOT the bitcode
         self.clear_flags()
         #check for half-carry
-        temp = ((self.registers.a & 0xf) - getattr(self.registers, r) & 0xF)
         if ((self.registers.a & 0xf) - getattr(self.registers, r) & 0xF) >= 15:
             self.flags.h = True
         #subtract register r from register a
@@ -612,6 +611,23 @@ class CPU(object):
             self.flags.z = True
         self.flags.n = True
         self.registers.m = 1
+
+    #region SUB Shortcuts
+    def SUBa(self):
+        self.SUBr('a')
+    def SUBb(self):
+        self.SUBr('b')
+    def SUBc(self):
+        self.SUBr('c')
+    def SUBd(self):
+        self.SUBr('d')
+    def SUBe(self):
+        self.SUBr('e')
+    def SUBh(self):
+        self.SUBr('h')
+    def SUBl(self):
+        self.SUBr('l')
+    #endregion
 
     def SUBn(self):
         #need to have the name of the register here NOT the bitcode
@@ -640,6 +656,90 @@ class CPU(object):
         hlval = mmu.read_byte(hladdr)
         #check for half-carry
         if ((self.registers.a & 0xf) - hlval & 0xF) >= 15:
+            self.flags.h = True
+        self.registers.a -= hlval
+        #check for carry
+        if self.registers.a < 0:
+            self.flags.cy = True
+        #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.n = True
+        self.registers.m = 2
+
+    def SBCa_r(self,r):
+        #need to have the name of the register here NOT the bitcode
+        carry = self.flags.cy
+        self.clear_flags()
+        #check for half-carry
+        if ((self.registers.a & 0xf) - getattr(self.registers, r) & 0xF) >= 15:
+            self.flags.h = True
+        #subtract register r from register a
+        self.registers.a -= getattr(self.registers, r)
+        if carry:
+            self.registers.a -= 1
+        #check for carry
+        if self.registers.a < 0:
+            self.flags.cy = True
+        #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.n = True
+        self.registers.m = 1
+
+    def SBCa_a(self):
+        self.SBCa_r('a')
+    def SBCa_b(self):
+        self.SBCa_r('b')
+    def SBCa_c(self):
+        self.SBCa_r('c')
+    def SBCa_d(self):
+        self.SBCa_r('d')
+    def SBCa_e(self):
+        self.SBCa_r('e')
+    def SBCa_h(self):
+        self.SBCa_r('h')
+    def SBCa_l(self):
+        self.SBCa_r('l')
+
+    def SBCa_n(self):
+        a = self.registers.a
+        carry = self.flags.cy
+        self.clear_flags()
+        n = mmu.read_byte(self.registers.pc)
+        self.registers.pc += 1
+        #check for half-carry
+        if ((self.registers.a & 0xf) - n & 0xF) >= 15:
+            self.flags.h = True
+        #subtract immediate operand n from register a
+        self.registers.a -= n
+        if carry:
+            self.registers.a -= 1
+        #check for carry
+        if self.registers.a < 0:
+            self.flags.cy = True
+        #mask to 8 bits
+        self.registers.a = self.registers.a & 255
+        #check for zero
+        if self.registers.a == 0:
+            self.flags.z = True
+        self.flags.n = True
+        self.registers.m = 2
+
+    def SBCa_hl(self):
+        a = self.registers.a
+        carry = self.flags.cy
+        self.clear_flags()
+        hladdr = (self.registers.h << 8) + self.registers.l
+        hlval = mmu.read_byte(hladdr)
+        if carry:
+            hlval += 1
+        #check for half-carry
+        if (self.registers.a ^ hlval ^ a)&0x10 > 15:
             self.flags.h = True
         self.registers.a -= hlval
         #check for carry
