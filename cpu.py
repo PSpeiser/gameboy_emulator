@@ -1842,6 +1842,24 @@ class CPU(object):
         self.flags.z = (hlval >> b) % 2 == 0
         self.flags.h = True
 
+    #region BIT_b_hl Shortcuts
+    def BIT_0_hl(self):
+        self.BIT_b_hl(0)
+    def BIT_1_hl(self):
+        self.BIT_b_hl(1)
+    def BIT_2_hl(self):
+        self.BIT_b_hl(2)
+    def BIT_3_hl(self):
+        self.BIT_b_hl(3)
+    def BIT_4_hl(self):
+        self.BIT_b_hl(4)
+    def BIT_5_hl(self):
+        self.BIT_b_hl(5)
+    def BIT_6_hl(self):
+        self.BIT_b_hl(6)
+    def BIT_7_hl(self):
+        self.BIT_b_hl(7)
+    #endregion
 
     def NOP(self):
         self.registers.m = 1

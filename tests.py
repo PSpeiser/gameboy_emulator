@@ -842,11 +842,11 @@ class TestCPUBitOperations(unittest.TestCase):
     def test_BIT_hl(self):
         self.cpu.set_register_pair('hl',0x8000)
         self.mmu.write_byte(0x8000,0xFE)
-        self.cpu.BIT_b_hl(0)
+        self.cpu.BIT_0_hl()
         assert self.cpu.flags.z == True
         assert self.cpu.flags.h == True
         assert self.cpu.flags.n == False
-        self.cpu.BIT_b_hl(1)
+        self.cpu.BIT_1_hl()
         assert self.cpu.flags.z == False
         assert self.cpu.flags.h == True
         assert self.cpu.flags.n == False
