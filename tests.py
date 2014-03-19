@@ -534,7 +534,7 @@ class TestCPUArithmetic(unittest.TestCase):
     def test_INChl(self):
         self.cpu.registers.h = 0x80
         self.cpu.registers.l = 0x00
-        self.mmu.write_byte(0x8000,0x50)
+        self.mmu.write_byte(0x8000, 0x50)
         self.cpu.INChl()
         assert self.mmu.read_byte(0x8000) == 0x51
         assert self.cpu.flags.z == False
@@ -552,7 +552,7 @@ class TestCPUArithmetic(unittest.TestCase):
     def test_DEChl(self):
         self.cpu.registers.h = 0x80
         self.cpu.registers.l = 0x00
-        self.mmu.write_byte(0x8000,0x00)
+        self.mmu.write_byte(0x8000, 0x00)
         self.cpu.DEChl()
         assert self.mmu.read_byte(0x8000) == 0xFF
         assert self.cpu.flags.z == False
@@ -583,7 +583,7 @@ class TestCPUArithmetic(unittest.TestCase):
 
     def test_ADDsp_e(self):
         self.cpu.registers.pc = 0x1000
-        self.mmu.write_byte(0x1000,0x02)
+        self.mmu.write_byte(0x1000, 0x02)
         self.cpu.registers.sp = 0xFFF8
         self.cpu.ADDsp_e()
         assert self.cpu.registers.sp == 0xFFFA
@@ -593,14 +593,15 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.z == False
 
     def INC_ss(self):
-        self.cpu.set_register_pair('de',0x235F)
+        self.cpu.set_register_pair('de', 0x235F)
         self.cpu.INC_ss('de')
         assert self.cpu.get_register_pair('de') == 0x2360
 
     def DEC_ss(self):
-        self.cpu.set_register_pair('de',0x235F)
+        self.cpu.set_register_pair('de', 0x235F)
         self.cpu.DEC_ss('de')
         assert self.cpu.get_register_pair('de') == 0x235E
+
 
 class TestCPUBitOperations(unittest.TestCase):
     def setUp(self):
@@ -658,8 +659,8 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.n == False
 
     def test_RLC_hl(self):
-        self.cpu.set_register_pair('hl',0x8000)
-        self.mmu.write_byte(0x8000,0x00)
+        self.cpu.set_register_pair('hl', 0x8000)
+        self.mmu.write_byte(0x8000, 0x00)
         self.cpu.flags.cy = False
         self.cpu.RLC_hl()
         assert self.mmu.read_byte(0x8000) == 0x00
@@ -679,8 +680,8 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.n == False
 
     def test_RL_hl(self):
-        self.cpu.set_register_pair('hl',0x8000)
-        self.mmu.write_byte(0x8000,0x11)
+        self.cpu.set_register_pair('hl', 0x8000)
+        self.mmu.write_byte(0x8000, 0x11)
         self.cpu.flags.cy = False
         self.cpu.RL_hl()
         assert self.mmu.read_byte(0x8000) == 0x22
@@ -700,8 +701,8 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.n == False
 
     def test_RRC_hl(self):
-        self.cpu.set_register_pair('hl',0x8000)
-        self.mmu.write_byte(0x8000,0x00)
+        self.cpu.set_register_pair('hl', 0x8000)
+        self.mmu.write_byte(0x8000, 0x00)
         self.cpu.flags.cy = False
         self.cpu.RRC_hl()
         assert self.mmu.read_byte(0x8000) == 0x00
@@ -721,8 +722,8 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.n == False
 
     def test_RR_hl(self):
-        self.cpu.set_register_pair('hl',0x8000)
-        self.mmu.write_byte(0x8000,0x8A)
+        self.cpu.set_register_pair('hl', 0x8000)
+        self.mmu.write_byte(0x8000, 0x8A)
         self.cpu.flags.cy = False
         self.cpu.RR_hl()
         assert self.mmu.read_byte(0x8000) == 0x45
