@@ -1694,6 +1694,27 @@ class CPU(object):
         self.mmu.write_byte(addr,value)
         self.registers.m = 4
 
+    def SWAP_r(self,r):
+        value = getattr(self.registers,r)
+        self.clear_flags()
+        hvalue = (value & 0x0F) << 4
+        lvalue = (value & 0xF0) >> 4
+        value = hvalue + lvalue
+        self.flags.z = value == 0
+        setattr(self.registers,r,value)
+        self.registers.m = 2
+
+    def SWAP_hl(self):
+        addr = self.get_register_pair('hl')
+        value = self.mmu.read_byte(addr)
+        self.clear_flags()
+        hvalue = (value & 0x0F) << 4
+        lvalue = (value & 0xF0) >> 4
+        value = hvalue + lvalue
+        self.flags.z = value == 0
+        self.mmu.write_byte(addr,value)
+        self.registers.m = 4
+
     def NOP(self):
         self.registers.m = 1
 

@@ -603,7 +603,7 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.get_register_pair('de') == 0x235E
 
 
-class TestCPUBitOperations(unittest.TestCase):
+class TestCPULogicalOperations(unittest.TestCase):
     def setUp(self):
         self.cpu = gameboy_emulator.cpu
         self.mmu = gameboy_emulator.mmu
@@ -794,6 +794,34 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.z == False
         assert self.cpu.flags.h == False
         assert self.cpu.flags.n == False
+
+    def test_SWAP_r(self):
+        self.cpu.registers.a = 0x00
+        self.cpu.SWAP_r('a')
+        assert self.cpu.registers.a == 0x00
+        assert self.cpu.flags.cy == False
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+        self.cpu.registers.a = 0x0F
+        self.cpu.SWAP_r('a')
+        assert self.cpu.registers.a == 0xF0
+        assert self.cpu.flags.cy == False
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+    def test_SWAP_hl(self):
+        self.cpu.set_register_pair('hl',0x8000)
+        self.mmu.write_byte(0x8000,0xF0)
+        self.cpu.SWAP_hl()
+        assert self.mmu.read_byte(0x8000) == 0x0F
+        assert self.cpu.flags.cy == False
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
 
 class TestMMU(unittest.TestCase):
     def setUp(self):
