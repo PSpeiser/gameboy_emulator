@@ -1385,19 +1385,19 @@ class CPU(object):
         self.registers.m = 2
 
     def Rl_a(self):
-        self.RL_r('%s')
+        self.RL_r('a')
     def Rl_b(self):
-        self.RL_r('%s')
+        self.RL_r('b')
     def Rl_c(self):
-        self.RL_r('%s')
+        self.RL_r('c')
     def Rl_d(self):
-        self.RL_r('%s')
+        self.RL_r('d')
     def Rl_e(self):
-        self.RL_r('%s')
+        self.RL_r('e')
     def Rl_h(self):
-        self.RL_r('%s')
+        self.RL_r('h')
     def Rl_l(self):
-        self.RL_r('%s')
+        self.RL_r('l')
 
     def RL_hl(self):
         addr = self.get_register_pair('hl')
@@ -1410,6 +1410,52 @@ class CPU(object):
         if carry:
             self.flags.cy = True
         value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        self.mmu.write_byte(addr,value)
+        self.registers.m = 4
+
+    def RRC_r(self,r):
+        value = getattr(self.registers,r)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value % 2 == 1
+        value = value >> 1
+        if carry:
+            self.flags.cy = True
+            value = value | 0x80
+        if value == 0:
+            self.flags.z = True
+        setattr(self.registers,r,value)
+        self.registers.m = 2
+
+    def RRC_a(self):
+        self.RRC_r('a')
+    def RRC_b(self):
+        self.RRC_r('b')
+    def RRC_c(self):
+        self.RRC_r('c')
+    def RRC_d(self):
+        self.RRC_r('d')
+    def RRC_e(self):
+        self.RRC_r('e')
+    def RRC_h(self):
+        self.RRC_r('h')
+    def RRC_l(self):
+        self.RRC_r('l')
+
+    def RRC_hl(self):
+        addr = self.get_register_pair('hl')
+        value = self.mmu.read_byte(addr)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value % 2 == 1
+        value = value >> 1
+        if carry:
+            self.flags.cy = True
+            value = value | 0x80
         if value == 0:
             self.flags.z = True
         self.mmu.write_byte(addr,value)
