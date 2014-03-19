@@ -1552,6 +1552,60 @@ class CPU(object):
         self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
+    def SLA_r(self, r):
+        value = getattr(self.registers, r)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+
+        value = value << 1
+        carry = value > 0xFF
+        if carry:
+            self.flags.cy = True
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        setattr(self.registers, r, value)
+        self.registers.m = 2
+
+    def SLA_a(self):
+        self.SLA_r('a')
+
+    def SLA_b(self):
+        self.SLA_r('b')
+
+    def SLA_c(self):
+        self.SLA_r('c')
+
+    def SLA_d(self):
+        self.SLA_r('d')
+
+    def SLA_e(self):
+        self.SLA_r('e')
+
+    def SLA_h(self):
+        self.SLA_r('h')
+
+    def SLA_l(self):
+        self.SLA_r('l')
+
+    def SLA_hl(self):
+        addr = self.get_register_pair('hl')
+        value = self.mmu.read_byte(addr)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+
+        value = value << 1
+        carry = value > 0xFF
+        if carry:
+            self.flags.cy = True
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        self.mmu.write_byte(addr, value)
+        self.registers.m = 4
+
     def NOP(self):
         self.registers.m = 1
 

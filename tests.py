@@ -732,6 +732,26 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.h == False
         assert self.cpu.flags.n == False
 
+    def test_SLA_r(self):
+        self.cpu.registers.d = 0x80
+        self.cpu.flags.cy = False
+        self.cpu.SLA_r('d')
+        assert self.cpu.registers.d == 0x00
+        assert self.cpu.flags.cy == True
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+    def test_SLA_hl(self):
+        self.cpu.set_register_pair('hl',0x8000)
+        self.mmu.write_byte(0x8000,0xFF)
+        self.cpu.flags.cy = False
+        self.cpu.SLA_hl()
+        assert self.mmu.read_byte(0x8000) == 0xFE
+        assert self.cpu.flags.cy == True
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
 
 class TestMMU(unittest.TestCase):
     def setUp(self):
