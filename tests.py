@@ -984,6 +984,25 @@ class TestCallAndReturnInstructions(unittest.TestCase):
         assert self.mmu.read_byte(0xFFFD) == 0x80
         assert self.mmu.read_byte(0xFFFC) == 0x03
 
+    def test_RET(self):
+        #CALL 0x9000
+        self.mmu.write_byte(0x8000,0b11001101)
+        self.mmu.write_word(0x8001,0x9000)
+        #RET
+        self.mmu.write_byte(0x9000,0b11001001)
+        #prepare registers
+        self.cpu.registers.pc = 0x8000
+        self.cpu.registers.sp = 0xFFFE
+        #simulate fetch
+        self.cpu.registers.pc += 1
+        #verify that CALL works
+        self.cpu.CALL_nn()
+        assert self.cpu.registers.pc == 0x9000
+        self.cpu.RET()
+        assert self.cpu.registers.pc == 0x8003
+
+
+
 
 class TestMMU(unittest.TestCase):
     def setUp(self):

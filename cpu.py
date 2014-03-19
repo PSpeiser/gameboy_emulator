@@ -2510,6 +2510,49 @@ class CPU(object):
     def CALL_c_nn(self):
         self.CALL_cc_nn('c')
 
+    def RET(self):
+        self.registers.pc = self.mmu.read_word(self.registers.sp)
+        self.registers.sp = self.registers.sp + 2
+        self.registers.m = 4
+
+    def RETI(self):
+        #might be incorrect
+        self.RET()
+
+    def RET_cc(self,cc):
+        passed = False
+        if cc == 'nz':
+            if not self.flags.z:
+                passed = True
+        elif cc == 'z':
+            if self.flags.z:
+                passed = True
+        elif cc == 'nc':
+            if not self.flags.cy:
+                passed = True
+        elif cc == 'c':
+            if self.flags.cy:
+                passed = True
+        self.registers.m = 2
+        if passed:
+            self.RET()
+            #RET will set it to 4 cycles, override
+            self.registers.m = 5
+
+    
+    def RET_nz(self):
+        self.RET_cc('nz')
+
+    def RET_z(self):
+        self.RET_cc('z')
+
+    def RET_nc(self):
+        self.RET_cc('nc')
+
+    def RET_c(self):
+        self.RET_cc('c')
+        
+
     def NOP(self):
         self.registers.m = 1
 
