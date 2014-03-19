@@ -1,5 +1,5 @@
 class CPU(object):
-    def __init__(self,mmu=None):
+    def __init__(self, mmu=None):
         self.mmu = mmu
 
         class Registers(object):
@@ -33,7 +33,7 @@ class CPU(object):
         self.clock = Clock()
 
     #region Utility functions
-    def get_register_pair(self,register_pair):
+    def get_register_pair(self, register_pair):
         if register_pair == 'bc':
             return (self.registers.b << 8) + self.registers.c
         elif register_pair == 'de':
@@ -43,7 +43,7 @@ class CPU(object):
         elif register_pair == 'sp':
             return self.registers.sp
 
-    def set_register_pair(self,register_pair,value):
+    def set_register_pair(self, register_pair, value):
         if register_pair == 'bc':
             self.registers.b = (value >> 8) & 0xFF
             self.registers.c = value & 0xFF
@@ -528,7 +528,7 @@ class CPU(object):
         value += self.registers.sp
         if value > 0xFFFF:
             self.flags.cy = True
-        self.set_register_pair('hl',value)
+        self.set_register_pair('hl', value)
         self.registers.m = 3
 
     def LDnn_sp(self):
@@ -1102,39 +1102,46 @@ class CPU(object):
         self.flags.n = True
         self.registers.m = 2
 
-    def INCr(self,r):
+    def INCr(self, r):
         self.clear_flags()
         #increment register by one
-        value = getattr(self.registers,r) + 1
+        value = getattr(self.registers, r) + 1
         #check for overflow
         if value > 255:
             self.flags.cy = True
-        #check for half-carry
+            #check for half-carry
         if (1 & 0xF) + (self.registers.a & 0xF) > 15:
             self.flags.h = True
-        #mask the register to 8 bits
+            #mask the register to 8 bits
         value = value & 0xFF
         if value == 0:
             self.flags.z = True
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 1
 
     #region INCr Shortcuts
     def INCa(self):
         self.INCr('a')
+
     def INCb(self):
         self.INCr('b')
+
     def INCc(self):
         self.INCr('c')
+
     def INCd(self):
         self.INCr('d')
+
     def INCe(self):
         self.INCr('e')
+
     def INCh(self):
         self.INCr('h')
+
     def INCl(self):
         self.INCr('l')
-    #endregion
+
+        #endregion
 
     def INChl(self):
         self.clear_flags()
@@ -1146,42 +1153,49 @@ class CPU(object):
         hlvalue = hlvalue & 0xFF
         if hlvalue == 0:
             self.flags.z = True
-        self.mmu.write_byte(self.get_register_pair('hl'),hlvalue)
+        self.mmu.write_byte(self.get_register_pair('hl'), hlvalue)
 
-    def DECr(self,r):
+    def DECr(self, r):
         self.clear_flags()
         #DECrement register by one
-        value = getattr(self.registers,r) - 1
+        value = getattr(self.registers, r) - 1
         #check for underflow
         if value < 0:
             self.flags.cy = True
-        #check for half-carry
+            #check for half-carry
         if (1 & 0xF) + (self.registers.a & 0xF) > 15:
             self.flags.h = True
-        #mask the register to 8 bits
+            #mask the register to 8 bits
         value = value & 0xFF
         if value == 0:
             self.flags.z = True
         self.flags.n = True
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 1
 
     #region DECr Shortcuts
     def DECa(self):
         self.DECr('a')
+
     def DECb(self):
         self.DECr('b')
+
     def DECc(self):
         self.DECr('c')
+
     def DECd(self):
         self.DECr('d')
+
     def DECe(self):
         self.DECr('e')
+
     def DECh(self):
         self.DECr('h')
+
     def DECl(self):
         self.DECr('l')
-    #endregion
+
+        #endregion
 
     def DEChl(self):
         self.clear_flags()
@@ -1194,10 +1208,10 @@ class CPU(object):
         if hlvalue == 0:
             self.flags.z = True
         self.flags.n = True
-        self.mmu.write_byte(self.get_register_pair('hl'),hlvalue)
+        self.mmu.write_byte(self.get_register_pair('hl'), hlvalue)
         self.registers.m = 3
 
-    def ADDhl_ss(self,ss):
+    def ADDhl_ss(self, ss):
         self.clear_flags()
         hlvalue = self.get_register_pair('hl')
         ssvalue = self.get_register_pair(ss)
@@ -1207,15 +1221,18 @@ class CPU(object):
         if value > 0xFFFF:
             self.flags.cy = True
         value = value & 0xFFFF
-        self.set_register_pair('hl',value)
+        self.set_register_pair('hl', value)
         self.registers.m = 2
 
     def ADDhl_bc(self):
         self.ADDhl_ss('bc')
+
     def ADDhl_de(self):
         self.ADDhl_ss('de')
+
     def ADDhl_hl(self):
         self.ADDhl_ss('hl')
+
     def ADDhl_sp(self):
         self.ADDhl_ss('sp')
 
@@ -1233,31 +1250,37 @@ class CPU(object):
         self.registers.sp = value
         self.registers.m = 4
 
-    def INC_ss(self,ss):
+    def INC_ss(self, ss):
         self.clear_flags()
-        self.set_register_pair(ss,self.get_register_pair(ss) + 1)
+        self.set_register_pair(ss, self.get_register_pair(ss) + 1)
         self.registers.m = 2
 
     def INC_bc(self):
         self.INC_ss('bc')
+
     def INC_de(self):
         self.INC_ss('de')
+
     def INC_hl(self):
         self.INC_ss('hl')
+
     def INC_sp(self):
         self.INC_ss('sp')
 
-    def DEC_ss(self,ss):
+    def DEC_ss(self, ss):
         self.clear_flags()
-        self.set_register_pair(ss,self.get_register_pair(ss) - 1)
+        self.set_register_pair(ss, self.get_register_pair(ss) - 1)
         self.registers.m = 2
 
     def DEC_bc(self):
         self.DEC_ss('bc')
+
     def DEC_de(self):
         self.DEC_ss('de')
+
     def DEC_hl(self):
         self.DEC_ss('hl')
+
     def DEC_sp(self):
         self.DEC_ss('sp')
 
@@ -1319,8 +1342,8 @@ class CPU(object):
         self.registers.a = value
         self.registers.m = 1
 
-    def RLC_r(self,r):
-        value = getattr(self.registers,r)
+    def RLC_r(self, r):
+        value = getattr(self.registers, r)
         if self.flags.cy:
             value += 1
         self.clear_flags()
@@ -1333,21 +1356,27 @@ class CPU(object):
         value = value & 0xFF
         if value == 0:
             self.flags.z = True
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 2
 
     def RLC_a(self):
         self.RLC_r('%s')
+
     def RLC_b(self):
         self.RLC_r('%s')
+
     def RLC_c(self):
         self.RLC_r('%s')
+
     def RLC_d(self):
         self.RLC_r('%s')
+
     def RLC_e(self):
         self.RLC_r('%s')
+
     def RLC_h(self):
         self.RLC_r('%s')
+
     def RLC_l(self):
         self.RLC_r('%s')
 
@@ -1366,36 +1395,42 @@ class CPU(object):
         value = value & 0xFF
         if value == 0:
             self.flags.z = True
-        self.mmu.write_byte(addr,value)
+        self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
-    def RL_r(self,r):
-        value = getattr(self.registers,r)
+    def RL_r(self, r):
+        value = getattr(self.registers, r)
         if self.flags.cy:
             value += 1
         self.clear_flags()
         value = value << 1
-        carry = value  > 0xFF
+        carry = value > 0xFF
         if carry:
             self.flags.cy = True
         value = value & 0xFF
         if value == 0:
             self.flags.z = True
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 2
 
     def Rl_a(self):
         self.RL_r('a')
+
     def Rl_b(self):
         self.RL_r('b')
+
     def Rl_c(self):
         self.RL_r('c')
+
     def Rl_d(self):
         self.RL_r('d')
+
     def Rl_e(self):
         self.RL_r('e')
+
     def Rl_h(self):
         self.RL_r('h')
+
     def Rl_l(self):
         self.RL_r('l')
 
@@ -1412,11 +1447,11 @@ class CPU(object):
         value = value & 0xFF
         if value == 0:
             self.flags.z = True
-        self.mmu.write_byte(addr,value)
+        self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
-    def RRC_r(self,r):
-        value = getattr(self.registers,r)
+    def RRC_r(self, r):
+        value = getattr(self.registers, r)
         if self.flags.cy:
             value += 1
         self.clear_flags()
@@ -1427,21 +1462,27 @@ class CPU(object):
             value = value | 0x80
         if value == 0:
             self.flags.z = True
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 2
 
     def RRC_a(self):
         self.RRC_r('a')
+
     def RRC_b(self):
         self.RRC_r('b')
+
     def RRC_c(self):
         self.RRC_r('c')
+
     def RRC_d(self):
         self.RRC_r('d')
+
     def RRC_e(self):
         self.RRC_r('e')
+
     def RRC_h(self):
         self.RRC_r('h')
+
     def RRC_l(self):
         self.RRC_r('l')
 
@@ -1458,7 +1499,57 @@ class CPU(object):
             value = value | 0x80
         if value == 0:
             self.flags.z = True
-        self.mmu.write_byte(addr,value)
+        self.mmu.write_byte(addr, value)
+        self.registers.m = 4
+
+    def RR_r(self, r):
+        value = getattr(self.registers, r)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value % 2 == 1
+        value = value >> 1
+        if carry:
+            self.flags.cy = True
+        if value == 0:
+            self.flags.z = True
+        setattr(self.registers, r, value)
+        self.registers.m = 2
+
+    def RR_a(self):
+        self.RR_r('a')
+
+    def RR_b(self):
+        self.RR_r('b')
+
+    def RR_c(self):
+        self.RR_r('c')
+
+    def RR_d(self):
+        self.RR_r('d')
+
+    def RR_e(self):
+        self.RR_r('e')
+
+    def RR_h(self):
+        self.RR_r('h')
+
+    def RR_l(self):
+        self.RR_r('l')
+
+    def RR_hl(self):
+        addr = self.get_register_pair('hl')
+        value = self.mmu.read_byte(addr)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        carry = value % 2 == 1
+        value = value >> 1
+        if carry:
+            self.flags.cy = True
+        if value == 0:
+            self.flags.z = True
+        self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
     def NOP(self):
