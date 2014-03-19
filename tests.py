@@ -851,6 +851,20 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.h == True
         assert self.cpu.flags.n == False
 
+    def test_SET_b_r(self):
+        self.cpu.registers.a = 0x80
+        self.cpu.SET_3_a()
+        assert self.cpu.registers.a == 0x88 #example says this value should be 0x84, calculator says 0x88 is correct
+        self.cpu.registers.l = 0x3B
+        self.cpu.SET_7_l()
+        assert self.cpu.registers.l == 0xBB
+
+    def test_SET_b_hl(self):
+        self.cpu.set_register_pair('hl',0x8000)
+        self.mmu.write_byte(0x8000,0x00)
+        self.cpu.SET_3_hl()
+        assert self.mmu.read_byte(self.cpu.get_register_pair('hl')) == 0x08
+
 class TestMMU(unittest.TestCase):
     def setUp(self):
         global gpu

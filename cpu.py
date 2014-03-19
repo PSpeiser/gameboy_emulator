@@ -1861,6 +1861,152 @@ class CPU(object):
         self.BIT_b_hl(7)
     #endregion
 
+    def SET_b_r(self,b,r):
+        self.clear_flags()
+        value = getattr(self.registers,r) | 2**b
+        setattr(self.registers,r,value)
+
+    #region SET Shortcuts
+    def SET_0_a(self):
+        self.SET_b_r(0,'a')
+    def SET_0_b(self):
+        self.SET_b_r(0,'b')
+    def SET_0_c(self):
+        self.SET_b_r(0,'c')
+    def SET_0_d(self):
+        self.SET_b_r(0,'d')
+    def SET_0_e(self):
+        self.SET_b_r(0,'e')
+    def SET_0_h(self):
+        self.SET_b_r(0,'h')
+    def SET_0_l(self):
+        self.SET_b_r(0,'l')
+    def SET_1_a(self):
+        self.SET_b_r(1,'a')
+    def SET_1_b(self):
+        self.SET_b_r(1,'b')
+    def SET_1_c(self):
+        self.SET_b_r(1,'c')
+    def SET_1_d(self):
+        self.SET_b_r(1,'d')
+    def SET_1_e(self):
+        self.SET_b_r(1,'e')
+    def SET_1_h(self):
+        self.SET_b_r(1,'h')
+    def SET_1_l(self):
+        self.SET_b_r(1,'l')
+    def SET_2_a(self):
+        self.SET_b_r(2,'a')
+    def SET_2_b(self):
+        self.SET_b_r(2,'b')
+    def SET_2_c(self):
+        self.SET_b_r(2,'c')
+    def SET_2_d(self):
+        self.SET_b_r(2,'d')
+    def SET_2_e(self):
+        self.SET_b_r(2,'e')
+    def SET_2_h(self):
+        self.SET_b_r(2,'h')
+    def SET_2_l(self):
+        self.SET_b_r(2,'l')
+    def SET_3_a(self):
+        self.SET_b_r(3,'a')
+    def SET_3_b(self):
+        self.SET_b_r(3,'b')
+    def SET_3_c(self):
+        self.SET_b_r(3,'c')
+    def SET_3_d(self):
+        self.SET_b_r(3,'d')
+    def SET_3_e(self):
+        self.SET_b_r(3,'e')
+    def SET_3_h(self):
+        self.SET_b_r(3,'h')
+    def SET_3_l(self):
+        self.SET_b_r(3,'l')
+    def SET_4_a(self):
+        self.SET_b_r(4,'a')
+    def SET_4_b(self):
+        self.SET_b_r(4,'b')
+    def SET_4_c(self):
+        self.SET_b_r(4,'c')
+    def SET_4_d(self):
+        self.SET_b_r(4,'d')
+    def SET_4_e(self):
+        self.SET_b_r(4,'e')
+    def SET_4_h(self):
+        self.SET_b_r(4,'h')
+    def SET_4_l(self):
+        self.SET_b_r(4,'l')
+    def SET_5_a(self):
+        self.SET_b_r(5,'a')
+    def SET_5_b(self):
+        self.SET_b_r(5,'b')
+    def SET_5_c(self):
+        self.SET_b_r(5,'c')
+    def SET_5_d(self):
+        self.SET_b_r(5,'d')
+    def SET_5_e(self):
+        self.SET_b_r(5,'e')
+    def SET_5_h(self):
+        self.SET_b_r(5,'h')
+    def SET_5_l(self):
+        self.SET_b_r(5,'l')
+    def SET_6_a(self):
+        self.SET_b_r(6,'a')
+    def SET_6_b(self):
+        self.SET_b_r(6,'b')
+    def SET_6_c(self):
+        self.SET_b_r(6,'c')
+    def SET_6_d(self):
+        self.SET_b_r(6,'d')
+    def SET_6_e(self):
+        self.SET_b_r(6,'e')
+    def SET_6_h(self):
+        self.SET_b_r(6,'h')
+    def SET_6_l(self):
+        self.SET_b_r(6,'l')
+    def SET_7_a(self):
+        self.SET_b_r(7,'a')
+    def SET_7_b(self):
+        self.SET_b_r(7,'b')
+    def SET_7_c(self):
+        self.SET_b_r(7,'c')
+    def SET_7_d(self):
+        self.SET_b_r(7,'d')
+    def SET_7_e(self):
+        self.SET_b_r(7,'e')
+    def SET_7_h(self):
+        self.SET_b_r(7,'h')
+    def SET_7_l(self):
+        self.SET_b_r(7,'l')
+    #endregion
+
+    def SET_b_hl(self,b):
+        self.clear_flags()
+        addr = self.get_register_pair('hl')
+        hlval = self.mmu.read_byte(addr)
+        hlval = hlval | 2**b
+        self.mmu.write_byte(addr,hlval)
+
+    #region SET_b_hl Shortcuts
+    def SET_0_hl(self):
+        self.SET_b_hl(0)
+    def SET_1_hl(self):
+        self.SET_b_hl(1)
+    def SET_2_hl(self):
+        self.SET_b_hl(2)
+    def SET_3_hl(self):
+        self.SET_b_hl(3)
+    def SET_4_hl(self):
+        self.SET_b_hl(4)
+    def SET_5_hl(self):
+        self.SET_b_hl(5)
+    def SET_6_hl(self):
+        self.SET_b_hl(6)
+    def SET_7_hl(self):
+        self.SET_b_hl(7)
+    #endregion
+
     def NOP(self):
         self.registers.m = 1
 
