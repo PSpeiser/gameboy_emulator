@@ -1656,6 +1656,29 @@ class CPU(object):
         self.mmu.write_byte(addr,value)
         self.registers.m = 4
 
+    def SRL_r(self,r):
+        value = getattr(self.registers,r)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        self.flags.cy = value % 2 == 1
+        value = (value >> 1)
+        self.flags.z = value == 0
+        setattr(self.registers,r,value)
+        self.registers.m = 2
+
+
+    def SRL_hl(self):
+        addr = self.get_register_pair('hl')
+        value = self.mmu.read_byte(addr)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        self.flags.cy = value % 2 == 1
+        value = (value >> 1)
+        self.flags.z = value == 0
+        self.mmu.write_byte(addr,value)
+        self.registers.m = 4
 
     def NOP(self):
         self.registers.m = 1
