@@ -939,13 +939,50 @@ class TestJumpInstructions(unittest.TestCase):
         self.cpu.registers.pc = 0x1000
         self.cpu.flags.z = True
         self.cpu.JR_z_e()
-        print hex(self.cpu.registers.pc)
         assert self.cpu.registers.pc == 0x0F81
 
     def test_JP_hl(self):
         self.cpu.set_register_pair('hl',0x8000)
         self.cpu.JP_hl()
         assert self.cpu.registers.pc == 0x8000
+
+class TestCallAndReturnInstructions(unittest.TestCase):
+    def setUp(self):
+        self.cpu = gameboy_emulator.cpu
+        self.mmu = gameboy_emulator.mmu
+
+    def test_CALL(self):
+        #CALL opcode was read from 0x8000
+        self.cpu.registers.pc = 0x8001
+        self.cpu.registers.sp = 0xFFFE
+        self.mmu.write_word(0x8001,0x1234)
+        self.cpu.CALL_nn()
+        assert self.cpu.registers.pc == 0x1234
+        assert self.mmu.read_byte(0xFFFD) == 0x80
+        assert self.mmu.read_byte(0xFFFC) == 0x03
+
+    def test_CALL_cc_nn(self):
+        #CALL NZ, 0x1234
+        self.mmu.write_byte(0x7FFD,0b1100100) #programming manual says the address should be 0x7FFC, i disagree
+        self.mmu.write_word(0x7FFE,0x1234) #this will make the final byte end up at 0x7FFF, 0x7FFC would have caused a gap
+        #CALL Z 0x1234
+        self.mmu.write_byte(0x8000,0b1101100)
+        self.mmu.write_word(0x8001,0x1234)
+        self.cpu.registers.pc = 0x7FFD
+        self.cpu.registers.sp = 0xFFFE
+        self.cpu.flags.z = True
+        #simulate fetch
+        self.cpu.registers.pc += 1
+        #CALL will increment pc by 2
+        self.cpu.CALL_nz_nn()
+        assert self.cpu.registers.pc == 0x8000
+        #first instruction finished, should have been equivalent to NOP
+        #simulate fetch
+        self.cpu.registers.pc += 1
+        self.cpu.CALL_z_nn()
+        assert self.cpu.registers.pc == 0x1234
+        assert self.mmu.read_byte(0xFFFD) == 0x80
+        assert self.mmu.read_byte(0xFFFC) == 0x03
 
 
 class TestMMU(unittest.TestCase):

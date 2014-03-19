@@ -2459,6 +2459,56 @@ class CPU(object):
         self.registers.pc = self.get_register_pair('hl')
         self.registers.m = 1
 
+    def CALL_nn(self):
+        ladrs = self.get_immediate_operand()
+        hadrs = self.get_immediate_operand()
+        nn = (hadrs << 8) + ladrs
+        pch = self.registers.pc >> 8
+        pcl = self.registers.pc & 0xFF
+        self.mmu.write_byte(self.registers.sp - 1, pch)
+        self.mmu.write_byte(self.registers.sp - 2, pcl)
+        self.registers.pc = nn
+        self.registers.sp -= 2
+        self.registers.m = 6
+
+    def CALL_cc_nn(self,cc):
+        ladrs = self.get_immediate_operand()
+        hadrs = self.get_immediate_operand()
+        nn = (hadrs << 8) + ladrs
+        passed = False
+        if cc == 'nz':
+            if not self.flags.z:
+                passed = True
+        elif cc == 'z':
+            if self.flags.z:
+                passed = True
+        elif cc == 'nc':
+            if not self.flags.cy:
+                passed = True
+        elif cc == 'c':
+            if self.flags.cy:
+                passed = True
+        self.registers.m = 3
+        if passed:
+            pch = self.registers.pc >> 8
+            pcl = self.registers.pc & 0xFF
+            self.mmu.write_byte(self.registers.sp - 1, pch)
+            self.mmu.write_byte(self.registers.sp - 2, pcl)
+            self.registers.pc = nn
+            self.registers.sp -= 2
+            self.registers.m = 6
+
+    def CALL_nz_nn(self):
+        self.CALL_cc_nn('nz')
+
+    def CALL_z_nn(self):
+        self.CALL_cc_nn('z')
+
+    def CALL_nc_nn(self):
+        self.CALL_cc_nn('nc')
+
+    def CALL_c_nn(self):
+        self.CALL_cc_nn('c')
 
     def NOP(self):
         self.registers.m = 1
