@@ -879,6 +879,45 @@ class TestCPUBitOperations(unittest.TestCase):
         self.cpu.RES_3_hl()
         assert self.mmu.read_byte(self.cpu.get_register_pair('hl')) == 0xF7
 
+class TestJumpInstructions(unittest.TestCase):
+    def setUp(self):
+        self.cpu = gameboy_emulator.cpu
+        self.mmu = gameboy_emulator.mmu
+
+    def test_JP_nn(self):
+        self.mmu.write_byte(0x1000,0x00)
+        self.mmu.write_byte(0x1001,0x80)
+        self.cpu.registers.pc = 0x1000
+        self.cpu.JP_nn()
+        assert self.cpu.registers.pc == 0x8000
+
+    def test_JP_cc_nn(self):
+        self.cpu.flags.z = True
+        self.cpu.flags.c = False
+        self.mmu.write_byte(0x1000,0x00)
+        self.mmu.write_byte(0x1001,0x80)
+        self.cpu.registers.pc = 0x1000
+        self.cpu.JP_nz_nn()
+        assert self.cpu.registers.pc == 0x1002
+        assert self.cpu.registers.m == 3
+
+        self.cpu.registers.pc = 0x1000
+        self.cpu.JP_z_nn()
+        assert self.cpu.registers.pc == 0x8000
+        assert self.cpu.registers.m == 4
+
+        self.cpu.registers.pc = 0x1000
+        self.cpu.JP_c_nn()
+        assert self.cpu.registers.pc == 0x1002
+        assert self.cpu.registers.m == 3
+
+        self.cpu.registers.pc = 0x1000
+        self.cpu.JP_nc_nn()
+        assert self.cpu.registers.pc == 0x8000
+        assert self.cpu.registers.m == 4
+
+
+
 class TestMMU(unittest.TestCase):
     def setUp(self):
         global gpu

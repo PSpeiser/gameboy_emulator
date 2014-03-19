@@ -1610,8 +1610,8 @@ class CPU(object):
         self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
-    def SRA_r(self,r):
-        value = getattr(self.registers,r)
+    def SRA_r(self, r):
+        value = getattr(self.registers, r)
         if self.flags.cy:
             value += 1
         self.clear_flags()
@@ -1621,25 +1621,32 @@ class CPU(object):
         if bit7set:
             value = value | 0x80
         self.flags.z = value == 0
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 2
 
     #region SRA Shortcuts
     def SRA_a(self):
         self.SRA_r('a')
+
     def SRA_b(self):
         self.SRA_r('b')
+
     def SRA_c(self):
         self.SRA_r('c')
+
     def SRA_d(self):
         self.SRA_r('d')
+
     def SRA_e(self):
         self.SRA_r('e')
+
     def SRA_h(self):
         self.SRA_r('h')
+
     def SRA_l(self):
         self.SRA_r('l')
-    #endregion
+
+        #endregion
 
     def SRA_hl(self):
         addr = self.get_register_pair('hl')
@@ -1653,32 +1660,38 @@ class CPU(object):
         if bit7set:
             value = value | 0x80
         self.flags.z = value == 0
-        self.mmu.write_byte(addr,value)
+        self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
-    def SRL_r(self,r):
-        value = getattr(self.registers,r)
+    def SRL_r(self, r):
+        value = getattr(self.registers, r)
         if self.flags.cy:
             value += 1
         self.clear_flags()
         self.flags.cy = value % 2 == 1
         value = (value >> 1)
         self.flags.z = value == 0
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 2
 
     def SRL_a(self):
         self.SRL_r('a')
+
     def SRL_b(self):
         self.SRL_r('b')
+
     def SRL_c(self):
         self.SRL_r('c')
+
     def SRL_d(self):
         self.SRL_r('d')
+
     def SRL_e(self):
         self.SRL_r('e')
+
     def SRL_h(self):
         self.SRL_r('h')
+
     def SRL_l(self):
         self.SRL_r('l')
 
@@ -1691,17 +1704,17 @@ class CPU(object):
         self.flags.cy = value % 2 == 1
         value = (value >> 1)
         self.flags.z = value == 0
-        self.mmu.write_byte(addr,value)
+        self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
-    def SWAP_r(self,r):
-        value = getattr(self.registers,r)
+    def SWAP_r(self, r):
+        value = getattr(self.registers, r)
         self.clear_flags()
         hvalue = (value & 0x0F) << 4
         lvalue = (value & 0xF0) >> 4
         value = hvalue + lvalue
         self.flags.z = value == 0
-        setattr(self.registers,r,value)
+        setattr(self.registers, r, value)
         self.registers.m = 2
 
     def SWAP_hl(self):
@@ -1712,448 +1725,695 @@ class CPU(object):
         lvalue = (value & 0xF0) >> 4
         value = hvalue + lvalue
         self.flags.z = value == 0
-        self.mmu.write_byte(addr,value)
+        self.mmu.write_byte(addr, value)
         self.registers.m = 4
 
-    def BIT_b_r(self,b,r):
+    def BIT_b_r(self, b, r):
         #b is the int specifying the bit, r is a string specifying the register
         self.clear_flags()
-        self.flags.z = (getattr(self.registers,r) >> b) % 2 == 0
+        self.flags.z = (getattr(self.registers, r) >> b) % 2 == 0
         self.flags.h = True
+        self.registers.m = 2
 
     #region BIT Shortcuts
     def BIT_0_a(self):
-        self.BIT_b_r(0,'a')
-    def BIT_0_b(self):
-        self.BIT_b_r(0,'b')
-    def BIT_0_c(self):
-        self.BIT_b_r(0,'c')
-    def BIT_0_d(self):
-        self.BIT_b_r(0,'d')
-    def BIT_0_e(self):
-        self.BIT_b_r(0,'e')
-    def BIT_0_h(self):
-        self.BIT_b_r(0,'h')
-    def BIT_0_l(self):
-        self.BIT_b_r(0,'l')
-    def BIT_1_a(self):
-        self.BIT_b_r(1,'a')
-    def BIT_1_b(self):
-        self.BIT_b_r(1,'b')
-    def BIT_1_c(self):
-        self.BIT_b_r(1,'c')
-    def BIT_1_d(self):
-        self.BIT_b_r(1,'d')
-    def BIT_1_e(self):
-        self.BIT_b_r(1,'e')
-    def BIT_1_h(self):
-        self.BIT_b_r(1,'h')
-    def BIT_1_l(self):
-        self.BIT_b_r(1,'l')
-    def BIT_2_a(self):
-        self.BIT_b_r(2,'a')
-    def BIT_2_b(self):
-        self.BIT_b_r(2,'b')
-    def BIT_2_c(self):
-        self.BIT_b_r(2,'c')
-    def BIT_2_d(self):
-        self.BIT_b_r(2,'d')
-    def BIT_2_e(self):
-        self.BIT_b_r(2,'e')
-    def BIT_2_h(self):
-        self.BIT_b_r(2,'h')
-    def BIT_2_l(self):
-        self.BIT_b_r(2,'l')
-    def BIT_3_a(self):
-        self.BIT_b_r(3,'a')
-    def BIT_3_b(self):
-        self.BIT_b_r(3,'b')
-    def BIT_3_c(self):
-        self.BIT_b_r(3,'c')
-    def BIT_3_d(self):
-        self.BIT_b_r(3,'d')
-    def BIT_3_e(self):
-        self.BIT_b_r(3,'e')
-    def BIT_3_h(self):
-        self.BIT_b_r(3,'h')
-    def BIT_3_l(self):
-        self.BIT_b_r(3,'l')
-    def BIT_4_a(self):
-        self.BIT_b_r(4,'a')
-    def BIT_4_b(self):
-        self.BIT_b_r(4,'b')
-    def BIT_4_c(self):
-        self.BIT_b_r(4,'c')
-    def BIT_4_d(self):
-        self.BIT_b_r(4,'d')
-    def BIT_4_e(self):
-        self.BIT_b_r(4,'e')
-    def BIT_4_h(self):
-        self.BIT_b_r(4,'h')
-    def BIT_4_l(self):
-        self.BIT_b_r(4,'l')
-    def BIT_5_a(self):
-        self.BIT_b_r(5,'a')
-    def BIT_5_b(self):
-        self.BIT_b_r(5,'b')
-    def BIT_5_c(self):
-        self.BIT_b_r(5,'c')
-    def BIT_5_d(self):
-        self.BIT_b_r(5,'d')
-    def BIT_5_e(self):
-        self.BIT_b_r(5,'e')
-    def BIT_5_h(self):
-        self.BIT_b_r(5,'h')
-    def BIT_5_l(self):
-        self.BIT_b_r(5,'l')
-    def BIT_6_a(self):
-        self.BIT_b_r(6,'a')
-    def BIT_6_b(self):
-        self.BIT_b_r(6,'b')
-    def BIT_6_c(self):
-        self.BIT_b_r(6,'c')
-    def BIT_6_d(self):
-        self.BIT_b_r(6,'d')
-    def BIT_6_e(self):
-        self.BIT_b_r(6,'e')
-    def BIT_6_h(self):
-        self.BIT_b_r(6,'h')
-    def BIT_6_l(self):
-        self.BIT_b_r(6,'l')
-    def BIT_7_a(self):
-        self.BIT_b_r(7,'a')
-    def BIT_7_b(self):
-        self.BIT_b_r(7,'b')
-    def BIT_7_c(self):
-        self.BIT_b_r(7,'c')
-    def BIT_7_d(self):
-        self.BIT_b_r(7,'d')
-    def BIT_7_e(self):
-        self.BIT_b_r(7,'e')
-    def BIT_7_h(self):
-        self.BIT_b_r(7,'h')
-    def BIT_7_l(self):
-        self.BIT_b_r(7,'l')
-    #endregion
+        self.BIT_b_r(0, 'a')
 
-    def BIT_b_hl(self,b):
+    def BIT_0_b(self):
+        self.BIT_b_r(0, 'b')
+
+    def BIT_0_c(self):
+        self.BIT_b_r(0, 'c')
+
+    def BIT_0_d(self):
+        self.BIT_b_r(0, 'd')
+
+    def BIT_0_e(self):
+        self.BIT_b_r(0, 'e')
+
+    def BIT_0_h(self):
+        self.BIT_b_r(0, 'h')
+
+    def BIT_0_l(self):
+        self.BIT_b_r(0, 'l')
+
+    def BIT_1_a(self):
+        self.BIT_b_r(1, 'a')
+
+    def BIT_1_b(self):
+        self.BIT_b_r(1, 'b')
+
+    def BIT_1_c(self):
+        self.BIT_b_r(1, 'c')
+
+    def BIT_1_d(self):
+        self.BIT_b_r(1, 'd')
+
+    def BIT_1_e(self):
+        self.BIT_b_r(1, 'e')
+
+    def BIT_1_h(self):
+        self.BIT_b_r(1, 'h')
+
+    def BIT_1_l(self):
+        self.BIT_b_r(1, 'l')
+
+    def BIT_2_a(self):
+        self.BIT_b_r(2, 'a')
+
+    def BIT_2_b(self):
+        self.BIT_b_r(2, 'b')
+
+    def BIT_2_c(self):
+        self.BIT_b_r(2, 'c')
+
+    def BIT_2_d(self):
+        self.BIT_b_r(2, 'd')
+
+    def BIT_2_e(self):
+        self.BIT_b_r(2, 'e')
+
+    def BIT_2_h(self):
+        self.BIT_b_r(2, 'h')
+
+    def BIT_2_l(self):
+        self.BIT_b_r(2, 'l')
+
+    def BIT_3_a(self):
+        self.BIT_b_r(3, 'a')
+
+    def BIT_3_b(self):
+        self.BIT_b_r(3, 'b')
+
+    def BIT_3_c(self):
+        self.BIT_b_r(3, 'c')
+
+    def BIT_3_d(self):
+        self.BIT_b_r(3, 'd')
+
+    def BIT_3_e(self):
+        self.BIT_b_r(3, 'e')
+
+    def BIT_3_h(self):
+        self.BIT_b_r(3, 'h')
+
+    def BIT_3_l(self):
+        self.BIT_b_r(3, 'l')
+
+    def BIT_4_a(self):
+        self.BIT_b_r(4, 'a')
+
+    def BIT_4_b(self):
+        self.BIT_b_r(4, 'b')
+
+    def BIT_4_c(self):
+        self.BIT_b_r(4, 'c')
+
+    def BIT_4_d(self):
+        self.BIT_b_r(4, 'd')
+
+    def BIT_4_e(self):
+        self.BIT_b_r(4, 'e')
+
+    def BIT_4_h(self):
+        self.BIT_b_r(4, 'h')
+
+    def BIT_4_l(self):
+        self.BIT_b_r(4, 'l')
+
+    def BIT_5_a(self):
+        self.BIT_b_r(5, 'a')
+
+    def BIT_5_b(self):
+        self.BIT_b_r(5, 'b')
+
+    def BIT_5_c(self):
+        self.BIT_b_r(5, 'c')
+
+    def BIT_5_d(self):
+        self.BIT_b_r(5, 'd')
+
+    def BIT_5_e(self):
+        self.BIT_b_r(5, 'e')
+
+    def BIT_5_h(self):
+        self.BIT_b_r(5, 'h')
+
+    def BIT_5_l(self):
+        self.BIT_b_r(5, 'l')
+
+    def BIT_6_a(self):
+        self.BIT_b_r(6, 'a')
+
+    def BIT_6_b(self):
+        self.BIT_b_r(6, 'b')
+
+    def BIT_6_c(self):
+        self.BIT_b_r(6, 'c')
+
+    def BIT_6_d(self):
+        self.BIT_b_r(6, 'd')
+
+    def BIT_6_e(self):
+        self.BIT_b_r(6, 'e')
+
+    def BIT_6_h(self):
+        self.BIT_b_r(6, 'h')
+
+    def BIT_6_l(self):
+        self.BIT_b_r(6, 'l')
+
+    def BIT_7_a(self):
+        self.BIT_b_r(7, 'a')
+
+    def BIT_7_b(self):
+        self.BIT_b_r(7, 'b')
+
+    def BIT_7_c(self):
+        self.BIT_b_r(7, 'c')
+
+    def BIT_7_d(self):
+        self.BIT_b_r(7, 'd')
+
+    def BIT_7_e(self):
+        self.BIT_b_r(7, 'e')
+
+    def BIT_7_h(self):
+        self.BIT_b_r(7, 'h')
+
+    def BIT_7_l(self):
+        self.BIT_b_r(7, 'l')
+
+        #endregion
+
+    def BIT_b_hl(self, b):
         self.clear_flags()
         hlval = self.mmu.read_byte(self.get_register_pair('hl'))
         self.flags.z = (hlval >> b) % 2 == 0
         self.flags.h = True
+        self.registers.m = 3
 
     #region BIT_b_hl Shortcuts
     def BIT_0_hl(self):
         self.BIT_b_hl(0)
+
     def BIT_1_hl(self):
         self.BIT_b_hl(1)
+
     def BIT_2_hl(self):
         self.BIT_b_hl(2)
+
     def BIT_3_hl(self):
         self.BIT_b_hl(3)
+
     def BIT_4_hl(self):
         self.BIT_b_hl(4)
+
     def BIT_5_hl(self):
         self.BIT_b_hl(5)
+
     def BIT_6_hl(self):
         self.BIT_b_hl(6)
+
     def BIT_7_hl(self):
         self.BIT_b_hl(7)
-    #endregion
 
-    def SET_b_r(self,b,r):
+        #endregion
+
+    def SET_b_r(self, b, r):
         self.clear_flags()
-        value = getattr(self.registers,r) | 2**b
-        setattr(self.registers,r,value)
+        value = getattr(self.registers, r) | 2 ** b
+        setattr(self.registers, r, value)
+        self.registers.m = 2
 
     #region SET Shortcuts
     def SET_0_a(self):
-        self.SET_b_r(0,'a')
-    def SET_0_b(self):
-        self.SET_b_r(0,'b')
-    def SET_0_c(self):
-        self.SET_b_r(0,'c')
-    def SET_0_d(self):
-        self.SET_b_r(0,'d')
-    def SET_0_e(self):
-        self.SET_b_r(0,'e')
-    def SET_0_h(self):
-        self.SET_b_r(0,'h')
-    def SET_0_l(self):
-        self.SET_b_r(0,'l')
-    def SET_1_a(self):
-        self.SET_b_r(1,'a')
-    def SET_1_b(self):
-        self.SET_b_r(1,'b')
-    def SET_1_c(self):
-        self.SET_b_r(1,'c')
-    def SET_1_d(self):
-        self.SET_b_r(1,'d')
-    def SET_1_e(self):
-        self.SET_b_r(1,'e')
-    def SET_1_h(self):
-        self.SET_b_r(1,'h')
-    def SET_1_l(self):
-        self.SET_b_r(1,'l')
-    def SET_2_a(self):
-        self.SET_b_r(2,'a')
-    def SET_2_b(self):
-        self.SET_b_r(2,'b')
-    def SET_2_c(self):
-        self.SET_b_r(2,'c')
-    def SET_2_d(self):
-        self.SET_b_r(2,'d')
-    def SET_2_e(self):
-        self.SET_b_r(2,'e')
-    def SET_2_h(self):
-        self.SET_b_r(2,'h')
-    def SET_2_l(self):
-        self.SET_b_r(2,'l')
-    def SET_3_a(self):
-        self.SET_b_r(3,'a')
-    def SET_3_b(self):
-        self.SET_b_r(3,'b')
-    def SET_3_c(self):
-        self.SET_b_r(3,'c')
-    def SET_3_d(self):
-        self.SET_b_r(3,'d')
-    def SET_3_e(self):
-        self.SET_b_r(3,'e')
-    def SET_3_h(self):
-        self.SET_b_r(3,'h')
-    def SET_3_l(self):
-        self.SET_b_r(3,'l')
-    def SET_4_a(self):
-        self.SET_b_r(4,'a')
-    def SET_4_b(self):
-        self.SET_b_r(4,'b')
-    def SET_4_c(self):
-        self.SET_b_r(4,'c')
-    def SET_4_d(self):
-        self.SET_b_r(4,'d')
-    def SET_4_e(self):
-        self.SET_b_r(4,'e')
-    def SET_4_h(self):
-        self.SET_b_r(4,'h')
-    def SET_4_l(self):
-        self.SET_b_r(4,'l')
-    def SET_5_a(self):
-        self.SET_b_r(5,'a')
-    def SET_5_b(self):
-        self.SET_b_r(5,'b')
-    def SET_5_c(self):
-        self.SET_b_r(5,'c')
-    def SET_5_d(self):
-        self.SET_b_r(5,'d')
-    def SET_5_e(self):
-        self.SET_b_r(5,'e')
-    def SET_5_h(self):
-        self.SET_b_r(5,'h')
-    def SET_5_l(self):
-        self.SET_b_r(5,'l')
-    def SET_6_a(self):
-        self.SET_b_r(6,'a')
-    def SET_6_b(self):
-        self.SET_b_r(6,'b')
-    def SET_6_c(self):
-        self.SET_b_r(6,'c')
-    def SET_6_d(self):
-        self.SET_b_r(6,'d')
-    def SET_6_e(self):
-        self.SET_b_r(6,'e')
-    def SET_6_h(self):
-        self.SET_b_r(6,'h')
-    def SET_6_l(self):
-        self.SET_b_r(6,'l')
-    def SET_7_a(self):
-        self.SET_b_r(7,'a')
-    def SET_7_b(self):
-        self.SET_b_r(7,'b')
-    def SET_7_c(self):
-        self.SET_b_r(7,'c')
-    def SET_7_d(self):
-        self.SET_b_r(7,'d')
-    def SET_7_e(self):
-        self.SET_b_r(7,'e')
-    def SET_7_h(self):
-        self.SET_b_r(7,'h')
-    def SET_7_l(self):
-        self.SET_b_r(7,'l')
-    #endregion
+        self.SET_b_r(0, 'a')
 
-    def SET_b_hl(self,b):
+    def SET_0_b(self):
+        self.SET_b_r(0, 'b')
+
+    def SET_0_c(self):
+        self.SET_b_r(0, 'c')
+
+    def SET_0_d(self):
+        self.SET_b_r(0, 'd')
+
+    def SET_0_e(self):
+        self.SET_b_r(0, 'e')
+
+    def SET_0_h(self):
+        self.SET_b_r(0, 'h')
+
+    def SET_0_l(self):
+        self.SET_b_r(0, 'l')
+
+    def SET_1_a(self):
+        self.SET_b_r(1, 'a')
+
+    def SET_1_b(self):
+        self.SET_b_r(1, 'b')
+
+    def SET_1_c(self):
+        self.SET_b_r(1, 'c')
+
+    def SET_1_d(self):
+        self.SET_b_r(1, 'd')
+
+    def SET_1_e(self):
+        self.SET_b_r(1, 'e')
+
+    def SET_1_h(self):
+        self.SET_b_r(1, 'h')
+
+    def SET_1_l(self):
+        self.SET_b_r(1, 'l')
+
+    def SET_2_a(self):
+        self.SET_b_r(2, 'a')
+
+    def SET_2_b(self):
+        self.SET_b_r(2, 'b')
+
+    def SET_2_c(self):
+        self.SET_b_r(2, 'c')
+
+    def SET_2_d(self):
+        self.SET_b_r(2, 'd')
+
+    def SET_2_e(self):
+        self.SET_b_r(2, 'e')
+
+    def SET_2_h(self):
+        self.SET_b_r(2, 'h')
+
+    def SET_2_l(self):
+        self.SET_b_r(2, 'l')
+
+    def SET_3_a(self):
+        self.SET_b_r(3, 'a')
+
+    def SET_3_b(self):
+        self.SET_b_r(3, 'b')
+
+    def SET_3_c(self):
+        self.SET_b_r(3, 'c')
+
+    def SET_3_d(self):
+        self.SET_b_r(3, 'd')
+
+    def SET_3_e(self):
+        self.SET_b_r(3, 'e')
+
+    def SET_3_h(self):
+        self.SET_b_r(3, 'h')
+
+    def SET_3_l(self):
+        self.SET_b_r(3, 'l')
+
+    def SET_4_a(self):
+        self.SET_b_r(4, 'a')
+
+    def SET_4_b(self):
+        self.SET_b_r(4, 'b')
+
+    def SET_4_c(self):
+        self.SET_b_r(4, 'c')
+
+    def SET_4_d(self):
+        self.SET_b_r(4, 'd')
+
+    def SET_4_e(self):
+        self.SET_b_r(4, 'e')
+
+    def SET_4_h(self):
+        self.SET_b_r(4, 'h')
+
+    def SET_4_l(self):
+        self.SET_b_r(4, 'l')
+
+    def SET_5_a(self):
+        self.SET_b_r(5, 'a')
+
+    def SET_5_b(self):
+        self.SET_b_r(5, 'b')
+
+    def SET_5_c(self):
+        self.SET_b_r(5, 'c')
+
+    def SET_5_d(self):
+        self.SET_b_r(5, 'd')
+
+    def SET_5_e(self):
+        self.SET_b_r(5, 'e')
+
+    def SET_5_h(self):
+        self.SET_b_r(5, 'h')
+
+    def SET_5_l(self):
+        self.SET_b_r(5, 'l')
+
+    def SET_6_a(self):
+        self.SET_b_r(6, 'a')
+
+    def SET_6_b(self):
+        self.SET_b_r(6, 'b')
+
+    def SET_6_c(self):
+        self.SET_b_r(6, 'c')
+
+    def SET_6_d(self):
+        self.SET_b_r(6, 'd')
+
+    def SET_6_e(self):
+        self.SET_b_r(6, 'e')
+
+    def SET_6_h(self):
+        self.SET_b_r(6, 'h')
+
+    def SET_6_l(self):
+        self.SET_b_r(6, 'l')
+
+    def SET_7_a(self):
+        self.SET_b_r(7, 'a')
+
+    def SET_7_b(self):
+        self.SET_b_r(7, 'b')
+
+    def SET_7_c(self):
+        self.SET_b_r(7, 'c')
+
+    def SET_7_d(self):
+        self.SET_b_r(7, 'd')
+
+    def SET_7_e(self):
+        self.SET_b_r(7, 'e')
+
+    def SET_7_h(self):
+        self.SET_b_r(7, 'h')
+
+    def SET_7_l(self):
+        self.SET_b_r(7, 'l')
+
+        #endregion
+
+    def SET_b_hl(self, b):
         self.clear_flags()
         addr = self.get_register_pair('hl')
         hlval = self.mmu.read_byte(addr)
-        hlval = hlval | 2**b
-        self.mmu.write_byte(addr,hlval)
+        hlval = hlval | 2 ** b
+        self.mmu.write_byte(addr, hlval)
+        self.registers.m = 4
 
     #region SET_b_hl Shortcuts
     def SET_0_hl(self):
         self.SET_b_hl(0)
+
     def SET_1_hl(self):
         self.SET_b_hl(1)
+
     def SET_2_hl(self):
         self.SET_b_hl(2)
+
     def SET_3_hl(self):
         self.SET_b_hl(3)
+
     def SET_4_hl(self):
         self.SET_b_hl(4)
+
     def SET_5_hl(self):
         self.SET_b_hl(5)
+
     def SET_6_hl(self):
         self.SET_b_hl(6)
+
     def SET_7_hl(self):
         self.SET_b_hl(7)
-    #endregion
 
-    def RES_b_r(self,b,r):
+        #endregion
+
+    def RES_b_r(self, b, r):
         self.clear_flags()
-        notval = ~(2**b)
-        value = getattr(self.registers,r) & notval
-        setattr(self.registers,r,value)
+        notval = ~(2 ** b)
+        value = getattr(self.registers, r) & notval
+        setattr(self.registers, r, value)
+        self.registers.m = 2
 
     #region RES_b_r Shortcuts
     def RES_0_a(self):
-        self.RES_b_r(0,'a')
-    def RES_0_b(self):
-        self.RES_b_r(0,'b')
-    def RES_0_c(self):
-        self.RES_b_r(0,'c')
-    def RES_0_d(self):
-        self.RES_b_r(0,'d')
-    def RES_0_e(self):
-        self.RES_b_r(0,'e')
-    def RES_0_h(self):
-        self.RES_b_r(0,'h')
-    def RES_0_l(self):
-        self.RES_b_r(0,'l')
-    def RES_1_a(self):
-        self.RES_b_r(1,'a')
-    def RES_1_b(self):
-        self.RES_b_r(1,'b')
-    def RES_1_c(self):
-        self.RES_b_r(1,'c')
-    def RES_1_d(self):
-        self.RES_b_r(1,'d')
-    def RES_1_e(self):
-        self.RES_b_r(1,'e')
-    def RES_1_h(self):
-        self.RES_b_r(1,'h')
-    def RES_1_l(self):
-        self.RES_b_r(1,'l')
-    def RES_2_a(self):
-        self.RES_b_r(2,'a')
-    def RES_2_b(self):
-        self.RES_b_r(2,'b')
-    def RES_2_c(self):
-        self.RES_b_r(2,'c')
-    def RES_2_d(self):
-        self.RES_b_r(2,'d')
-    def RES_2_e(self):
-        self.RES_b_r(2,'e')
-    def RES_2_h(self):
-        self.RES_b_r(2,'h')
-    def RES_2_l(self):
-        self.RES_b_r(2,'l')
-    def RES_3_a(self):
-        self.RES_b_r(3,'a')
-    def RES_3_b(self):
-        self.RES_b_r(3,'b')
-    def RES_3_c(self):
-        self.RES_b_r(3,'c')
-    def RES_3_d(self):
-        self.RES_b_r(3,'d')
-    def RES_3_e(self):
-        self.RES_b_r(3,'e')
-    def RES_3_h(self):
-        self.RES_b_r(3,'h')
-    def RES_3_l(self):
-        self.RES_b_r(3,'l')
-    def RES_4_a(self):
-        self.RES_b_r(4,'a')
-    def RES_4_b(self):
-        self.RES_b_r(4,'b')
-    def RES_4_c(self):
-        self.RES_b_r(4,'c')
-    def RES_4_d(self):
-        self.RES_b_r(4,'d')
-    def RES_4_e(self):
-        self.RES_b_r(4,'e')
-    def RES_4_h(self):
-        self.RES_b_r(4,'h')
-    def RES_4_l(self):
-        self.RES_b_r(4,'l')
-    def RES_5_a(self):
-        self.RES_b_r(5,'a')
-    def RES_5_b(self):
-        self.RES_b_r(5,'b')
-    def RES_5_c(self):
-        self.RES_b_r(5,'c')
-    def RES_5_d(self):
-        self.RES_b_r(5,'d')
-    def RES_5_e(self):
-        self.RES_b_r(5,'e')
-    def RES_5_h(self):
-        self.RES_b_r(5,'h')
-    def RES_5_l(self):
-        self.RES_b_r(5,'l')
-    def RES_6_a(self):
-        self.RES_b_r(6,'a')
-    def RES_6_b(self):
-        self.RES_b_r(6,'b')
-    def RES_6_c(self):
-        self.RES_b_r(6,'c')
-    def RES_6_d(self):
-        self.RES_b_r(6,'d')
-    def RES_6_e(self):
-        self.RES_b_r(6,'e')
-    def RES_6_h(self):
-        self.RES_b_r(6,'h')
-    def RES_6_l(self):
-        self.RES_b_r(6,'l')
-    def RES_7_a(self):
-        self.RES_b_r(7,'a')
-    def RES_7_b(self):
-        self.RES_b_r(7,'b')
-    def RES_7_c(self):
-        self.RES_b_r(7,'c')
-    def RES_7_d(self):
-        self.RES_b_r(7,'d')
-    def RES_7_e(self):
-        self.RES_b_r(7,'e')
-    def RES_7_h(self):
-        self.RES_b_r(7,'h')
-    def RES_7_l(self):
-        self.RES_b_r(7,'l')
-    #endregion
+        self.RES_b_r(0, 'a')
 
-    def RES_b_hl(self,b):
+    def RES_0_b(self):
+        self.RES_b_r(0, 'b')
+
+    def RES_0_c(self):
+        self.RES_b_r(0, 'c')
+
+    def RES_0_d(self):
+        self.RES_b_r(0, 'd')
+
+    def RES_0_e(self):
+        self.RES_b_r(0, 'e')
+
+    def RES_0_h(self):
+        self.RES_b_r(0, 'h')
+
+    def RES_0_l(self):
+        self.RES_b_r(0, 'l')
+
+    def RES_1_a(self):
+        self.RES_b_r(1, 'a')
+
+    def RES_1_b(self):
+        self.RES_b_r(1, 'b')
+
+    def RES_1_c(self):
+        self.RES_b_r(1, 'c')
+
+    def RES_1_d(self):
+        self.RES_b_r(1, 'd')
+
+    def RES_1_e(self):
+        self.RES_b_r(1, 'e')
+
+    def RES_1_h(self):
+        self.RES_b_r(1, 'h')
+
+    def RES_1_l(self):
+        self.RES_b_r(1, 'l')
+
+    def RES_2_a(self):
+        self.RES_b_r(2, 'a')
+
+    def RES_2_b(self):
+        self.RES_b_r(2, 'b')
+
+    def RES_2_c(self):
+        self.RES_b_r(2, 'c')
+
+    def RES_2_d(self):
+        self.RES_b_r(2, 'd')
+
+    def RES_2_e(self):
+        self.RES_b_r(2, 'e')
+
+    def RES_2_h(self):
+        self.RES_b_r(2, 'h')
+
+    def RES_2_l(self):
+        self.RES_b_r(2, 'l')
+
+    def RES_3_a(self):
+        self.RES_b_r(3, 'a')
+
+    def RES_3_b(self):
+        self.RES_b_r(3, 'b')
+
+    def RES_3_c(self):
+        self.RES_b_r(3, 'c')
+
+    def RES_3_d(self):
+        self.RES_b_r(3, 'd')
+
+    def RES_3_e(self):
+        self.RES_b_r(3, 'e')
+
+    def RES_3_h(self):
+        self.RES_b_r(3, 'h')
+
+    def RES_3_l(self):
+        self.RES_b_r(3, 'l')
+
+    def RES_4_a(self):
+        self.RES_b_r(4, 'a')
+
+    def RES_4_b(self):
+        self.RES_b_r(4, 'b')
+
+    def RES_4_c(self):
+        self.RES_b_r(4, 'c')
+
+    def RES_4_d(self):
+        self.RES_b_r(4, 'd')
+
+    def RES_4_e(self):
+        self.RES_b_r(4, 'e')
+
+    def RES_4_h(self):
+        self.RES_b_r(4, 'h')
+
+    def RES_4_l(self):
+        self.RES_b_r(4, 'l')
+
+    def RES_5_a(self):
+        self.RES_b_r(5, 'a')
+
+    def RES_5_b(self):
+        self.RES_b_r(5, 'b')
+
+    def RES_5_c(self):
+        self.RES_b_r(5, 'c')
+
+    def RES_5_d(self):
+        self.RES_b_r(5, 'd')
+
+    def RES_5_e(self):
+        self.RES_b_r(5, 'e')
+
+    def RES_5_h(self):
+        self.RES_b_r(5, 'h')
+
+    def RES_5_l(self):
+        self.RES_b_r(5, 'l')
+
+    def RES_6_a(self):
+        self.RES_b_r(6, 'a')
+
+    def RES_6_b(self):
+        self.RES_b_r(6, 'b')
+
+    def RES_6_c(self):
+        self.RES_b_r(6, 'c')
+
+    def RES_6_d(self):
+        self.RES_b_r(6, 'd')
+
+    def RES_6_e(self):
+        self.RES_b_r(6, 'e')
+
+    def RES_6_h(self):
+        self.RES_b_r(6, 'h')
+
+    def RES_6_l(self):
+        self.RES_b_r(6, 'l')
+
+    def RES_7_a(self):
+        self.RES_b_r(7, 'a')
+
+    def RES_7_b(self):
+        self.RES_b_r(7, 'b')
+
+    def RES_7_c(self):
+        self.RES_b_r(7, 'c')
+
+    def RES_7_d(self):
+        self.RES_b_r(7, 'd')
+
+    def RES_7_e(self):
+        self.RES_b_r(7, 'e')
+
+    def RES_7_h(self):
+        self.RES_b_r(7, 'h')
+
+    def RES_7_l(self):
+        self.RES_b_r(7, 'l')
+
+        #endregion
+
+    def RES_b_hl(self, b):
         self.clear_flags()
         addr = self.get_register_pair('hl')
         hlval = self.mmu.read_byte(addr)
-        notval = ~(2**b)
+        notval = ~(2 ** b)
         hlval = hlval & notval
-        self.mmu.write_byte(addr,hlval)
+        self.mmu.write_byte(addr, hlval)
+        self.registers.m = 4
+
 
     #region RES_b_hl Shortcuts
     def RES_0_hl(self):
         self.RES_b_hl(0)
+
     def RES_1_hl(self):
         self.RES_b_hl(1)
+
     def RES_2_hl(self):
         self.RES_b_hl(2)
+
     def RES_3_hl(self):
         self.RES_b_hl(3)
+
     def RES_4_hl(self):
         self.RES_b_hl(4)
+
     def RES_5_hl(self):
         self.RES_b_hl(5)
+
     def RES_6_hl(self):
         self.RES_b_hl(6)
+
     def RES_7_hl(self):
         self.RES_b_hl(7)
-    #endregion
+
+        #endregion
+
+    def JP_nn(self):
+        ladrs = self.get_immediate_operand()
+        hadrs = self.get_immediate_operand()
+        addr = (hadrs << 8) + ladrs
+        self.registers.pc = addr
+
+    def JP_cc_nn(self, cc):
+        ladrs = self.get_immediate_operand()
+        hadrs = self.get_immediate_operand()
+        addr = (hadrs << 8) + ladrs
+        if cc == 'nz':
+            if not self.flags.z:
+                self.registers.pc = addr
+                self.registers.m = 4
+            else:
+                self.registers.m = 3
+        elif cc == 'z':
+            if self.flags.z:
+                self.registers.pc = addr
+                self.registers.m = 4
+            else:
+                self.registers.m = 3
+        elif cc == 'nc':
+            if not self.flags.cy:
+                self.registers.pc = addr
+                self.registers.m = 4
+            else:
+                self.registers.m = 3
+        elif cc == 'c':
+            if self.flags.cy:
+                self.registers.pc = addr
+                self.registers.m = 4
+            else:
+                self.registers.m = 3
+
+    def JP_nz_nn(self):
+        self.JP_cc_nn('nz')
+
+    def JP_z_nn(self):
+        self.JP_cc_nn('z')
+
+    def JP_nc_nn(self):
+        self.JP_cc_nn('nc')
+
+    def JP_c_nn(self):
+        self.JP_cc_nn('c')
+
 
     def NOP(self):
         self.registers.m = 1
