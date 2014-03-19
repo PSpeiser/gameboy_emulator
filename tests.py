@@ -942,6 +942,11 @@ class TestJumpInstructions(unittest.TestCase):
         print hex(self.cpu.registers.pc)
         assert self.cpu.registers.pc == 0x0F81
 
+    def test_JP_hl(self):
+        self.cpu.set_register_pair('hl',0x8000)
+        self.cpu.JP_hl()
+        assert self.cpu.registers.pc == 0x8000
+
 
 class TestMMU(unittest.TestCase):
     def setUp(self):

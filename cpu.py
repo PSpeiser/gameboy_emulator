@@ -2455,6 +2455,9 @@ class CPU(object):
     def JR_c_e(self):
         self.JR_cc_e('c')
 
+    def JP_hl(self):
+        self.registers.pc = self.get_register_pair('hl')
+        self.registers.m = 1
 
 
     def NOP(self):
