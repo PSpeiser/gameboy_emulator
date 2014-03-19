@@ -2553,6 +2553,31 @@ class CPU(object):
         self.RET_cc('c')
         
 
+    def RST_t(self,t):
+        pch = self.registers.pc >> 8
+        pcl = self.registers.pc & 0xFF
+        self.mmu.write_byte(self.registers.sp - 1, pch)
+        self.mmu.write_byte(self.registers.sp - 2, pcl)
+        self.registers.sp -= 2
+        self.registers.pc = t * 8
+
+    def RST_0(self):
+        self.RST_t(0)
+    def RST_1(self):
+        self.RST_t(1)
+    def RST_2(self):
+        self.RST_t(2)
+    def RST_3(self):
+        self.RST_t(3)
+    def RST_4(self):
+        self.RST_t(4)
+    def RST_5(self):
+        self.RST_t(5)
+    def RST_6(self):
+        self.RST_t(6)
+    def RST_7(self):
+        self.RST_t(7)
+
     def NOP(self):
         self.registers.m = 1
 

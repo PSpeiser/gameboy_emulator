@@ -1001,6 +1001,14 @@ class TestCallAndReturnInstructions(unittest.TestCase):
         self.cpu.RET()
         assert self.cpu.registers.pc == 0x8003
 
+    def test_RST(self):
+        self.cpu.registers.pc = 0x8001
+        self.cpu.registers.sp = 0xFFFE
+        self.cpu.RST_1()
+        assert self.cpu.registers.pc == 0x0008
+        assert self.mmu.read_word(0xFFFC) == 0x8001
+
+
 
 
 
