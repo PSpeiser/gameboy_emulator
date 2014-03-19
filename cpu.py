@@ -1568,6 +1568,8 @@ class CPU(object):
         setattr(self.registers, r, value)
         self.registers.m = 2
 
+    #region SLA_r Shortcuts
+
     def SLA_a(self):
         self.SLA_r('a')
 
@@ -1589,6 +1591,8 @@ class CPU(object):
     def SLA_l(self):
         self.SLA_r('l')
 
+    #endregion
+
     def SLA_hl(self):
         addr = self.get_register_pair('hl')
         value = self.mmu.read_byte(addr)
@@ -1605,6 +1609,53 @@ class CPU(object):
             self.flags.z = True
         self.mmu.write_byte(addr, value)
         self.registers.m = 4
+
+    def SRA_r(self,r):
+        value = getattr(self.registers,r)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        self.flags.cy = value % 2 == 1
+        bit7set = value >= 0x80
+        value = (value >> 1)
+        if bit7set:
+            value = value | 0x80
+        self.flags.z = value == 0
+        setattr(self.registers,r,value)
+        self.registers.m = 2
+
+    #region SRA Shortcuts
+    def SRA_a(self):
+        self.SRA_r('a')
+    def SRA_b(self):
+        self.SRA_r('b')
+    def SRA_c(self):
+        self.SRA_r('c')
+    def SRA_d(self):
+        self.SRA_r('d')
+    def SRA_e(self):
+        self.SRA_r('e')
+    def SRA_h(self):
+        self.SRA_r('h')
+    def SRA_l(self):
+        self.SRA_r('l')
+    #endregion
+
+    def SRA_hl(self):
+        addr = self.get_register_pair('hl')
+        value = self.mmu.read_byte(addr)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        self.flags.cy = value % 2 == 1
+        bit7set = value >= 0x80
+        value = (value >> 1)
+        if bit7set:
+            value = value | 0x80
+        self.flags.z = value == 0
+        self.mmu.write_byte(addr,value)
+        self.registers.m = 4
+
 
     def NOP(self):
         self.registers.m = 1
