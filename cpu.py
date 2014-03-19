@@ -2414,6 +2414,48 @@ class CPU(object):
     def JP_c_nn(self):
         self.JP_cc_nn('c')
 
+    def JR_e(self):
+        value = self.get_immediate_operand()
+        if value > 127:
+            value =-((~value+1)&255)
+        self.registers.pc += value
+        self.registers.m = 3
+
+    def JR_cc_e(self,cc):
+        value = self.get_immediate_operand()
+        if value > 127:
+            value =-((~value+1)&255)
+        self.registers.m = 2
+        if cc == 'nz':
+            if not self.flags.z:
+                self.registers.pc += value
+                self.registers.m += 1
+        elif cc == 'z':
+            if self.flags.z:
+                self.registers.pc += value
+                self.registers.m += 1
+        elif cc == 'nc':
+            if not self.flags.cy:
+                self.registers.pc += value
+                self.registers.m += 1
+        elif cc == 'c':
+            if self.flags.cy:
+                self.registers.pc += value
+                self.registers.m += 1
+                
+    def JR_nz_e(self):
+        self.JR_cc_e('nz')
+
+    def JR_z_e(self):
+        self.JR_cc_e('z')
+
+    def JR_nc_e(self):
+        self.JR_cc_e('nc')
+
+    def JR_c_e(self):
+        self.JR_cc_e('c')
+
+
 
     def NOP(self):
         self.registers.m = 1

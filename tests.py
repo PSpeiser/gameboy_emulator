@@ -916,6 +916,31 @@ class TestJumpInstructions(unittest.TestCase):
         assert self.cpu.registers.pc == 0x8000
         assert self.cpu.registers.m == 4
 
+    def test_JR_e(self):
+        self.cpu.registers.pc = 0x1000
+        self.mmu.write_byte(0x1000,5)
+        self.cpu.JR_e()
+        assert self.cpu.registers.pc == 0x1006
+
+    def test_JR_cc_e(self):
+        self.mmu.write_byte(0x1000,5)
+
+        self.cpu.registers.pc = 0x1000
+        self.cpu.flags.z = False
+        self.cpu.JR_nz_e()
+        assert self.cpu.registers.pc == 0x1006
+
+        self.cpu.registers.pc = 0x1000
+        self.cpu.flags.z = True
+        self.cpu.JR_nz_e()
+        assert self.cpu.registers.pc == 0x1001
+
+        self.mmu.write_byte(0x1000,0x80)
+        self.cpu.registers.pc = 0x1000
+        self.cpu.flags.z = True
+        self.cpu.JR_z_e()
+        print hex(self.cpu.registers.pc)
+        assert self.cpu.registers.pc == 0x0F81
 
 
 class TestMMU(unittest.TestCase):
