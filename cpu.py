@@ -1266,7 +1266,7 @@ class CPU(object):
         if self.flags.cy:
             value += 1
         self.clear_flags()
-        carry = value & 0xFF
+        carry = value > 0xFF
         if carry:
             #bit 0 should be set to 1 here according to the documentation, example test fails in that case
             self.flags.cy = True
@@ -1281,7 +1281,7 @@ class CPU(object):
         if self.flags.cy:
             value += 1
         self.clear_flags()
-        carry = value & 0xFF
+        carry = value > 0xFF
         if carry:
             self.flags.cy = True
         value = value & 0xFF
@@ -1325,7 +1325,7 @@ class CPU(object):
             value += 1
         self.clear_flags()
         value = value << 1
-        carry = value & 0xFF
+        carry = value > 0xFF
         if carry:
             self.flags.cy = True
             if value % 2 == 0:
@@ -1358,7 +1358,7 @@ class CPU(object):
             value += 1
         self.clear_flags()
         value = value << 1
-        carry = value & 0xFF
+        carry = value > 0xFF
         if carry:
             self.flags.cy = True
             if value % 2 == 0:
@@ -1369,6 +1369,51 @@ class CPU(object):
         self.mmu.write_byte(addr,value)
         self.registers.m = 4
 
+    def RL_r(self,r):
+        value = getattr(self.registers,r)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        value = value << 1
+        carry = value  > 0xFF
+        if carry:
+            self.flags.cy = True
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        setattr(self.registers,r,value)
+        self.registers.m = 2
+
+    def Rl_a(self):
+        self.RL_r('%s')
+    def Rl_b(self):
+        self.RL_r('%s')
+    def Rl_c(self):
+        self.RL_r('%s')
+    def Rl_d(self):
+        self.RL_r('%s')
+    def Rl_e(self):
+        self.RL_r('%s')
+    def Rl_h(self):
+        self.RL_r('%s')
+    def Rl_l(self):
+        self.RL_r('%s')
+
+    def RL_hl(self):
+        addr = self.get_register_pair('hl')
+        value = self.mmu.read_byte(addr)
+        if self.flags.cy:
+            value += 1
+        self.clear_flags()
+        value = value << 1
+        carry = value > 0xFF
+        if carry:
+            self.flags.cy = True
+        value = value & 0xFF
+        if value == 0:
+            self.flags.z = True
+        self.mmu.write_byte(addr,value)
+        self.registers.m = 4
 
     def NOP(self):
         self.registers.m = 1

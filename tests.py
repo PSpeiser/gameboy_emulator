@@ -668,6 +668,27 @@ class TestCPUBitOperations(unittest.TestCase):
         assert self.cpu.flags.h == False
         assert self.cpu.flags.n == False
 
+    def test_RL_r(self):
+        self.cpu.registers.l = 0x80
+        self.cpu.flags.cy = False
+        self.cpu.RL_r('l')
+        assert self.cpu.registers.l == 0x00
+        assert self.cpu.flags.cy == True
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
+    def test_RL_hl(self):
+        self.cpu.set_register_pair('hl',0x8000)
+        self.mmu.write_byte(0x8000,0x11)
+        self.cpu.flags.cy = False
+        self.cpu.RL_hl()
+        assert self.mmu.read_byte(0x8000) == 0x22
+        assert self.cpu.flags.cy == False
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == False
+        assert self.cpu.flags.n == False
+
 class TestMMU(unittest.TestCase):
     def setUp(self):
         global gpu
