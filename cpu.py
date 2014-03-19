@@ -1715,6 +1715,134 @@ class CPU(object):
         self.mmu.write_byte(addr,value)
         self.registers.m = 4
 
+    def BIT_b_r(self,b,r):
+        #b is the int specifying the bit, r is a string specifying the register
+        self.clear_flags()
+        self.flags.z = (getattr(self.registers,r) >> b) % 2 == 0
+        self.flags.h = True
+
+    #region BIT Shortcuts
+    def BIT_0_a(self):
+        self.BIT_b_r(0,'a')
+    def BIT_0_b(self):
+        self.BIT_b_r(0,'b')
+    def BIT_0_c(self):
+        self.BIT_b_r(0,'c')
+    def BIT_0_d(self):
+        self.BIT_b_r(0,'d')
+    def BIT_0_e(self):
+        self.BIT_b_r(0,'e')
+    def BIT_0_h(self):
+        self.BIT_b_r(0,'h')
+    def BIT_0_l(self):
+        self.BIT_b_r(0,'l')
+    def BIT_1_a(self):
+        self.BIT_b_r(1,'a')
+    def BIT_1_b(self):
+        self.BIT_b_r(1,'b')
+    def BIT_1_c(self):
+        self.BIT_b_r(1,'c')
+    def BIT_1_d(self):
+        self.BIT_b_r(1,'d')
+    def BIT_1_e(self):
+        self.BIT_b_r(1,'e')
+    def BIT_1_h(self):
+        self.BIT_b_r(1,'h')
+    def BIT_1_l(self):
+        self.BIT_b_r(1,'l')
+    def BIT_2_a(self):
+        self.BIT_b_r(2,'a')
+    def BIT_2_b(self):
+        self.BIT_b_r(2,'b')
+    def BIT_2_c(self):
+        self.BIT_b_r(2,'c')
+    def BIT_2_d(self):
+        self.BIT_b_r(2,'d')
+    def BIT_2_e(self):
+        self.BIT_b_r(2,'e')
+    def BIT_2_h(self):
+        self.BIT_b_r(2,'h')
+    def BIT_2_l(self):
+        self.BIT_b_r(2,'l')
+    def BIT_3_a(self):
+        self.BIT_b_r(3,'a')
+    def BIT_3_b(self):
+        self.BIT_b_r(3,'b')
+    def BIT_3_c(self):
+        self.BIT_b_r(3,'c')
+    def BIT_3_d(self):
+        self.BIT_b_r(3,'d')
+    def BIT_3_e(self):
+        self.BIT_b_r(3,'e')
+    def BIT_3_h(self):
+        self.BIT_b_r(3,'h')
+    def BIT_3_l(self):
+        self.BIT_b_r(3,'l')
+    def BIT_4_a(self):
+        self.BIT_b_r(4,'a')
+    def BIT_4_b(self):
+        self.BIT_b_r(4,'b')
+    def BIT_4_c(self):
+        self.BIT_b_r(4,'c')
+    def BIT_4_d(self):
+        self.BIT_b_r(4,'d')
+    def BIT_4_e(self):
+        self.BIT_b_r(4,'e')
+    def BIT_4_h(self):
+        self.BIT_b_r(4,'h')
+    def BIT_4_l(self):
+        self.BIT_b_r(4,'l')
+    def BIT_5_a(self):
+        self.BIT_b_r(5,'a')
+    def BIT_5_b(self):
+        self.BIT_b_r(5,'b')
+    def BIT_5_c(self):
+        self.BIT_b_r(5,'c')
+    def BIT_5_d(self):
+        self.BIT_b_r(5,'d')
+    def BIT_5_e(self):
+        self.BIT_b_r(5,'e')
+    def BIT_5_h(self):
+        self.BIT_b_r(5,'h')
+    def BIT_5_l(self):
+        self.BIT_b_r(5,'l')
+    def BIT_6_a(self):
+        self.BIT_b_r(6,'a')
+    def BIT_6_b(self):
+        self.BIT_b_r(6,'b')
+    def BIT_6_c(self):
+        self.BIT_b_r(6,'c')
+    def BIT_6_d(self):
+        self.BIT_b_r(6,'d')
+    def BIT_6_e(self):
+        self.BIT_b_r(6,'e')
+    def BIT_6_h(self):
+        self.BIT_b_r(6,'h')
+    def BIT_6_l(self):
+        self.BIT_b_r(6,'l')
+    def BIT_7_a(self):
+        self.BIT_b_r(7,'a')
+    def BIT_7_b(self):
+        self.BIT_b_r(7,'b')
+    def BIT_7_c(self):
+        self.BIT_b_r(7,'c')
+    def BIT_7_d(self):
+        self.BIT_b_r(7,'d')
+    def BIT_7_e(self):
+        self.BIT_b_r(7,'e')
+    def BIT_7_h(self):
+        self.BIT_b_r(7,'h')
+    def BIT_7_l(self):
+        self.BIT_b_r(7,'l')
+    #endregion
+
+    def BIT_b_hl(self,b):
+        self.clear_flags()
+        hlval = self.mmu.read_byte(self.get_register_pair('hl'))
+        self.flags.z = (hlval >> b) % 2 == 0
+        self.flags.h = True
+
+
     def NOP(self):
         self.registers.m = 1
 

@@ -132,7 +132,7 @@ class TestCPUIO(unittest.TestCase):
         self.cpu.LDbc_a()
         assert self.mmu.read_byte(0x205F) == 0x3F
 
-    def test_LDbc_a(self):
+    def test_LDde_a(self):
         self.cpu.registers.d = 0x20
         self.cpu.registers.e = 0x5C
         self.cpu.registers.a = 0xFF
@@ -592,12 +592,12 @@ class TestCPUArithmetic(unittest.TestCase):
         assert self.cpu.flags.n == False
         assert self.cpu.flags.z == False
 
-    def INC_ss(self):
+    def test_INC_ss(self):
         self.cpu.set_register_pair('de', 0x235F)
         self.cpu.INC_ss('de')
         assert self.cpu.get_register_pair('de') == 0x2360
 
-    def DEC_ss(self):
+    def test_DEC_ss(self):
         self.cpu.set_register_pair('de', 0x235F)
         self.cpu.DEC_ss('de')
         assert self.cpu.get_register_pair('de') == 0x235E
@@ -822,6 +822,34 @@ class TestCPULogicalOperations(unittest.TestCase):
         assert self.cpu.flags.h == False
         assert self.cpu.flags.n == False
 
+class TestCPUBitOperations(unittest.TestCase):
+    def setUp(self):
+        self.cpu = gameboy_emulator.cpu
+        self.mmu = gameboy_emulator.mmu
+
+    def test_BITb_r(self):
+        self.cpu.registers.a = 0x80
+        self.cpu.BIT_7_a()
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == False
+        self.cpu.registers.l = 0xEF
+        self.cpu.BIT_4_l()
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == False
+
+    def test_BIT_hl(self):
+        self.cpu.set_register_pair('hl',0x8000)
+        self.mmu.write_byte(0x8000,0xFE)
+        self.cpu.BIT_b_hl(0)
+        assert self.cpu.flags.z == True
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == False
+        self.cpu.BIT_b_hl(1)
+        assert self.cpu.flags.z == False
+        assert self.cpu.flags.h == True
+        assert self.cpu.flags.n == False
 
 class TestMMU(unittest.TestCase):
     def setUp(self):
