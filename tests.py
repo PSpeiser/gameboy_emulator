@@ -331,7 +331,7 @@ class TestCPUArithmetic(unittest.TestCase):
         self.cpu.SUBr('e')
         assert self.cpu.registers.a == 0
         assert self.cpu.flags.z == True
-        assert self.cpu.flags.h == False
+        assert self.cpu.flags.h == True
         assert self.cpu.flags.n == True
         assert self.cpu.flags.cy == False
 
@@ -1007,6 +1007,20 @@ class TestCallAndReturnInstructions(unittest.TestCase):
         self.cpu.RST_1()
         assert self.cpu.registers.pc == 0x0008
         assert self.mmu.read_word(0xFFFC) == 0x8001
+
+    def test_DAA(self):
+        self.cpu.registers.a = 0x45
+        self.cpu.registers.b = 0x38
+        self.cpu.ADDb()
+        assert self.cpu.registers.a == 0x7D
+        self.cpu.DAA()
+        assert self.cpu.registers.a == 0x83
+        self.cpu.SUBb()
+        assert self.cpu.registers.a == 0x4B
+        assert self.cpu.flags.n == True
+        assert self.cpu.flags.h == True
+        self.cpu.DAA()
+        assert self.cpu.registers.a == 0x45
 
 
 

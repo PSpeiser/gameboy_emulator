@@ -719,22 +719,32 @@ class CPU(object):
     #region Subtraction
 
     def SUBr(self, r):
+        #var a=Z80._r.a;
+        # Z80._r.a-=Z80._r.b;
+        # Z80._r.f=(Z80._r.a<0)?0x50:0x40;
+        # Z80._r.a&=255;
+        # if(!Z80._r.a)
+        # Z80._r.f|=0x80;
+        # if((Z80._r.a^Z80._r.b^a)&0x10)
+        # Z80._r.f|=0x20;
+        # Z80._r.m=1;
         #need to have the name of the register here NOT the bitcode
+        a = self.registers.a
+        self.registers.a -= getattr(self.registers,r)
         self.clear_flags()
-        #check for half-carry
-        if ((self.registers.a & 0xf) - getattr(self.registers, r) & 0xF) >= 15:
-            self.flags.h = True
-            #subtract register r from register a
-        self.registers.a -= getattr(self.registers, r)
-        #check for carry
-        if self.registers.a < 0:
-            self.flags.cy = True
-            #mask to 8 bits
-        self.registers.a = self.registers.a & 255
+        self.flags.cy = self.registers.a < 0
+        self.flags.n = True
+        #mask to 8 bits
+        self.registers.a &= 255
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
-        self.flags.n = True
+        #check for half-carry
+        if (self.registers.a ^ self.registers.b ^ a) & 0x10:
+            self.flags.h = True
+
+
+
         self.registers.m = 1
 
     #region SUB Shortcuts
@@ -2560,6 +2570,7 @@ class CPU(object):
         self.mmu.write_byte(self.registers.sp - 2, pcl)
         self.registers.sp -= 2
         self.registers.pc = t * 8
+        self.registers.m = 4
 
     def RST_0(self):
         self.RST_t(0)
@@ -2577,6 +2588,84 @@ class CPU(object):
         self.RST_t(6)
     def RST_7(self):
         self.RST_t(7)
+
+    def DAA(self):
+        a = self.registers.a
+        hnibble = self.registers.a >> 8
+        lnibble = self.registers.a & 0xFF
+        self.registers.m = 1
+        if not self.flags.n:
+            #previous operation was ADD/ADC
+            if not self.flags.cy:
+                if hnibble <= 0x9:
+                    if not self.flags.h:
+                        if lnibble <= 0x9:
+                            #line 1
+                            return
+                        else:
+                            #line 2
+                            self.registers.a += 0x06
+                            self.registers.a &= 0xFF
+                    else:
+                        #line 3
+                        self.registers.a += 0x06
+                        self.registers.a &= 0xFF
+                else:
+                    if not self.flags.h:
+                        if lnibble <= 0x9:
+                            #line 4
+                            self.registers.a += 0x60
+                            self.registers.a &= 0xFF
+                            self.flags.cy = True
+                        else:
+                            #line 5
+                            self.registers.a += 0x66
+                            self.registers.a &= 0xFF
+                            self.flags.cy = True
+                    else:
+                        #line 6
+                        self.registers.a += 0x66
+                        self.registers.a &= 0xFF
+                        self.flags.cy = True
+            else:
+                if not self.flags.h:
+                    if lnibble <= 0x9:
+                        #line 7
+                        self.registers.a += 0x60
+                        self.registers.a &= 0xFF
+                        self.flags.cy = True
+                    else:
+                        #line 8
+                        self.registers.a += 0x66
+                        self.registers.a &= 0xFF
+                        self.flags.cy = True
+                else:
+                    #line 9
+                    self.registers.a += 0x66
+                    self.registers.a &= 0xFF
+                    self.flags.cy = True
+        else:
+            #Previous operation was SUB/SBC
+            if not self.flags.cy:
+                if not self.flags.h:
+                    return
+                else:
+                    self.registers.a += 0xFA
+                    self.registers.a &= 0xFF
+                    self.flags.cy = False
+            else:
+                if not self.flags.h:
+                    self.registers.a += 0xA0
+                    self.registers.a &= 0xFF
+                    self.flags.cy = True
+                else:
+                    self.registers.a += 0x9A
+                    self.registers.a &= 0xFF
+                    self.flags.cy = True
+
+
+
+
 
     def NOP(self):
         self.registers.m = 1
