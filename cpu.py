@@ -1667,6 +1667,20 @@ class CPU(object):
         setattr(self.registers,r,value)
         self.registers.m = 2
 
+    def SRL_a(self):
+        self.SRL_r('a')
+    def SRL_b(self):
+        self.SRL_r('b')
+    def SRL_c(self):
+        self.SRL_r('c')
+    def SRL_d(self):
+        self.SRL_r('d')
+    def SRL_e(self):
+        self.SRL_r('e')
+    def SRL_h(self):
+        self.SRL_r('h')
+    def SRL_l(self):
+        self.SRL_r('l')
 
     def SRL_hl(self):
         addr = self.get_register_pair('hl')
