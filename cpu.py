@@ -2007,6 +2007,154 @@ class CPU(object):
         self.SET_b_hl(7)
     #endregion
 
+    def RES_b_r(self,b,r):
+        self.clear_flags()
+        notval = ~(2**b)
+        value = getattr(self.registers,r) & notval
+        setattr(self.registers,r,value)
+
+    #region RES_b_r Shortcuts
+    def RES_0_a(self):
+        self.RES_b_r(0,'a')
+    def RES_0_b(self):
+        self.RES_b_r(0,'b')
+    def RES_0_c(self):
+        self.RES_b_r(0,'c')
+    def RES_0_d(self):
+        self.RES_b_r(0,'d')
+    def RES_0_e(self):
+        self.RES_b_r(0,'e')
+    def RES_0_h(self):
+        self.RES_b_r(0,'h')
+    def RES_0_l(self):
+        self.RES_b_r(0,'l')
+    def RES_1_a(self):
+        self.RES_b_r(1,'a')
+    def RES_1_b(self):
+        self.RES_b_r(1,'b')
+    def RES_1_c(self):
+        self.RES_b_r(1,'c')
+    def RES_1_d(self):
+        self.RES_b_r(1,'d')
+    def RES_1_e(self):
+        self.RES_b_r(1,'e')
+    def RES_1_h(self):
+        self.RES_b_r(1,'h')
+    def RES_1_l(self):
+        self.RES_b_r(1,'l')
+    def RES_2_a(self):
+        self.RES_b_r(2,'a')
+    def RES_2_b(self):
+        self.RES_b_r(2,'b')
+    def RES_2_c(self):
+        self.RES_b_r(2,'c')
+    def RES_2_d(self):
+        self.RES_b_r(2,'d')
+    def RES_2_e(self):
+        self.RES_b_r(2,'e')
+    def RES_2_h(self):
+        self.RES_b_r(2,'h')
+    def RES_2_l(self):
+        self.RES_b_r(2,'l')
+    def RES_3_a(self):
+        self.RES_b_r(3,'a')
+    def RES_3_b(self):
+        self.RES_b_r(3,'b')
+    def RES_3_c(self):
+        self.RES_b_r(3,'c')
+    def RES_3_d(self):
+        self.RES_b_r(3,'d')
+    def RES_3_e(self):
+        self.RES_b_r(3,'e')
+    def RES_3_h(self):
+        self.RES_b_r(3,'h')
+    def RES_3_l(self):
+        self.RES_b_r(3,'l')
+    def RES_4_a(self):
+        self.RES_b_r(4,'a')
+    def RES_4_b(self):
+        self.RES_b_r(4,'b')
+    def RES_4_c(self):
+        self.RES_b_r(4,'c')
+    def RES_4_d(self):
+        self.RES_b_r(4,'d')
+    def RES_4_e(self):
+        self.RES_b_r(4,'e')
+    def RES_4_h(self):
+        self.RES_b_r(4,'h')
+    def RES_4_l(self):
+        self.RES_b_r(4,'l')
+    def RES_5_a(self):
+        self.RES_b_r(5,'a')
+    def RES_5_b(self):
+        self.RES_b_r(5,'b')
+    def RES_5_c(self):
+        self.RES_b_r(5,'c')
+    def RES_5_d(self):
+        self.RES_b_r(5,'d')
+    def RES_5_e(self):
+        self.RES_b_r(5,'e')
+    def RES_5_h(self):
+        self.RES_b_r(5,'h')
+    def RES_5_l(self):
+        self.RES_b_r(5,'l')
+    def RES_6_a(self):
+        self.RES_b_r(6,'a')
+    def RES_6_b(self):
+        self.RES_b_r(6,'b')
+    def RES_6_c(self):
+        self.RES_b_r(6,'c')
+    def RES_6_d(self):
+        self.RES_b_r(6,'d')
+    def RES_6_e(self):
+        self.RES_b_r(6,'e')
+    def RES_6_h(self):
+        self.RES_b_r(6,'h')
+    def RES_6_l(self):
+        self.RES_b_r(6,'l')
+    def RES_7_a(self):
+        self.RES_b_r(7,'a')
+    def RES_7_b(self):
+        self.RES_b_r(7,'b')
+    def RES_7_c(self):
+        self.RES_b_r(7,'c')
+    def RES_7_d(self):
+        self.RES_b_r(7,'d')
+    def RES_7_e(self):
+        self.RES_b_r(7,'e')
+    def RES_7_h(self):
+        self.RES_b_r(7,'h')
+    def RES_7_l(self):
+        self.RES_b_r(7,'l')
+    #endregion
+
+    def RES_b_hl(self,b):
+        self.clear_flags()
+        addr = self.get_register_pair('hl')
+        hlval = self.mmu.read_byte(addr)
+        notval = ~(2**b)
+        hlval = hlval & notval
+        self.mmu.write_byte(addr,hlval)
+
+    #region RES_b_hl Shortcuts
+    def RES_0_hl(self):
+        self.RES_b_hl(0)
+    def RES_1_hl(self):
+        self.RES_b_hl(1)
+    def RES_2_hl(self):
+        self.RES_b_hl(2)
+    def RES_3_hl(self):
+        self.RES_b_hl(3)
+    def RES_4_hl(self):
+        self.RES_b_hl(4)
+    def RES_5_hl(self):
+        self.RES_b_hl(5)
+    def RES_6_hl(self):
+        self.RES_b_hl(6)
+    def RES_7_hl(self):
+        self.RES_b_hl(7)
+    #endregion
+
     def NOP(self):
         self.registers.m = 1
 

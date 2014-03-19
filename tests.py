@@ -863,7 +863,21 @@ class TestCPUBitOperations(unittest.TestCase):
         self.cpu.set_register_pair('hl',0x8000)
         self.mmu.write_byte(0x8000,0x00)
         self.cpu.SET_3_hl()
-        assert self.mmu.read_byte(self.cpu.get_register_pair('hl')) == 0x08
+        assert self.mmu.read_byte(self.cpu.get_register_pair('hl')) == 0x08 #example says this should be 04H[sic]
+
+    def test_RES_b_r(self):
+        self.cpu.registers.a = 0x80
+        self.cpu.RES_7_a()
+        assert self.cpu.registers.a == 0x00
+        self.cpu.registers.l = 0x3B
+        self.cpu.RES_1_l()
+        assert self.cpu.registers.l == 0x39
+
+    def test_RES_b_hl(self):
+        self.cpu.set_register_pair('hl',0x8000)
+        self.mmu.write_byte(0x8000,0xFF)
+        self.cpu.RES_3_hl()
+        assert self.mmu.read_byte(self.cpu.get_register_pair('hl')) == 0xF7
 
 class TestMMU(unittest.TestCase):
     def setUp(self):
