@@ -1022,6 +1022,10 @@ class TestCallAndReturnInstructions(unittest.TestCase):
         self.cpu.DAA()
         assert self.cpu.registers.a == 0x45
 
+    def test_CPL(self):
+        self.cpu.registers.a = 0x35
+        self.cpu.CPL()
+        assert self.cpu.registers.a == 0xCA
 
 
 

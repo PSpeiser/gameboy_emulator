@@ -2667,7 +2667,9 @@ class CPU(object):
                     self.registers.a &= 0xFF
                     self.flags.cy = True
 
-
+    def CPL(self):
+        self.registers.a = self.registers.a ^ 0xFF
+        self.registers.m =  1
 
 
 
