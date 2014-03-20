@@ -1,6 +1,8 @@
 class CPU(object):
     def __init__(self, mmu=None):
         self.mmu = mmu
+        self.halt = False
+        self.stop = False
 
         class Registers(object):
             def __init__(self):
@@ -2676,3 +2678,15 @@ class CPU(object):
     def NOP(self):
         self.registers.m = 1
 
+
+    def HALT(self):
+        self.halt = True
+        self.registers.m = 1
+
+    def STOP(self):
+        self.stop = True
+        self.registers.m = 1
+
+    def UNIMPLEMENTED(self):
+        self.stop = True
+        print "Unimplemented instruction %s Stopped" % hex(self.mmu.read_byte(self.registers.pc -1))
