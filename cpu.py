@@ -774,11 +774,9 @@ class CPU(object):
     def SUBn(self):
         #need to have the name of the register here NOT the bitcode
         self.clear_flags()
+        a = self.registers.a
         n = self.get_immediate_operand()
-        #check for half-carry
-        if ((self.registers.a & 0xf) - n & 0xF) >= 15:
-            self.flags.h = True
-            #subtract immediate operand n from register a
+        #subtract immediate operand n from register a
         self.registers.a -= n
         #check for carry
         if self.registers.a < 0:
@@ -788,21 +786,25 @@ class CPU(object):
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
+        #check for half-carry
+        if (self.registers.a ^ n ^ a) & 0x10:
+            self.flags.h = True
         self.flags.n = True
         self.registers.m = 2
 
     def SUBhl(self):
         self.clear_flags()
+        a = self.registers.a
         hlval = self.mmu.read_byte(self.get_register_pair('hl'))
-        #check for half-carry
-        if ((self.registers.a & 0xf) - hlval & 0xF) >= 15:
-            self.flags.h = True
         self.registers.a -= hlval
         #check for carry
         if self.registers.a < 0:
             self.flags.cy = True
             #mask to 8 bits
         self.registers.a = self.registers.a & 255
+        #check for half-carry
+        if (self.registers.a ^ hlval ^ a) & 0x10:
+            self.flags.h = True
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
@@ -813,11 +815,10 @@ class CPU(object):
         #need to have the name of the register here NOT the bitcode
         carry = self.flags.cy
         self.clear_flags()
-        #check for half-carry
-        if ((self.registers.a & 0xf) - getattr(self.registers, r) & 0xF) >= 15:
-            self.flags.h = True
-            #subtract register r from register a
-        self.registers.a -= getattr(self.registers, r)
+        a = self.registers.a
+        #subtract register r from register a
+        n = getattr(self.registers, r)
+        self.registers.a -= n
         if carry:
             self.registers.a -= 1
             #check for carry
@@ -825,6 +826,9 @@ class CPU(object):
             self.flags.cy = True
             #mask to 8 bits
         self.registers.a = self.registers.a & 255
+        #check for half-carry
+        if (self.registers.a ^ n^ a) & 0x10:
+            self.flags.h = True
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
@@ -857,21 +861,21 @@ class CPU(object):
         carry = self.flags.cy
         self.clear_flags()
         n = self.get_immediate_operand()
-        #check for half-carry
-        if ((self.registers.a & 0xf) - n & 0xF) >= 15:
-            self.flags.h = True
-            #subtract immediate operand n from register a
+        #subtract immediate operand n from register a
         self.registers.a -= n
         if carry:
             self.registers.a -= 1
-            #check for carry
+        #check for carry
         if self.registers.a < 0:
             self.flags.cy = True
-            #mask to 8 bits
+        #mask to 8 bits
         self.registers.a = self.registers.a & 255
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
+        #check for half-carry
+        if (self.registers.a ^ n^ a) & 0x10:
+            self.flags.h = True
         self.flags.n = True
         self.registers.m = 2
 
