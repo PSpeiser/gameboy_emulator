@@ -732,7 +732,7 @@ class CPU(object):
         # Z80._r.m=1;
         #need to have the name of the register here NOT the bitcode
         a = self.registers.a
-        self.registers.a -= getattr(self.registers,r)
+        self.registers.a -= getattr(self.registers, r)
         self.clear_flags()
         self.flags.cy = self.registers.a < 0
         self.flags.n = True
@@ -741,11 +741,9 @@ class CPU(object):
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
-        #check for half-carry
+            #check for half-carry
         if (self.registers.a ^ self.registers.b ^ a) & 0x10:
             self.flags.h = True
-
-
 
         self.registers.m = 1
 
@@ -788,7 +786,7 @@ class CPU(object):
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
-        #check for half-carry
+            #check for half-carry
         if (self.registers.a ^ n ^ a) & 0x10:
             self.flags.h = True
         self.flags.n = True
@@ -807,7 +805,7 @@ class CPU(object):
         #check for half-carry
         if (self.registers.a ^ hlval ^ a) & 0x10:
             self.flags.h = True
-        #check for zero
+            #check for zero
         if self.registers.a == 0:
             self.flags.z = True
         self.flags.n = True
@@ -829,9 +827,9 @@ class CPU(object):
             #mask to 8 bits
         self.registers.a = self.registers.a & 255
         #check for half-carry
-        if (self.registers.a ^ n^ a) & 0x10:
+        if (self.registers.a ^ n ^ a) & 0x10:
             self.flags.h = True
-        #check for zero
+            #check for zero
         if self.registers.a == 0:
             self.flags.z = True
         self.flags.n = True
@@ -867,16 +865,16 @@ class CPU(object):
         self.registers.a -= n
         if carry:
             self.registers.a -= 1
-        #check for carry
+            #check for carry
         if self.registers.a < 0:
             self.flags.cy = True
-        #mask to 8 bits
+            #mask to 8 bits
         self.registers.a = self.registers.a & 255
         #check for zero
         if self.registers.a == 0:
             self.flags.z = True
-        #check for half-carry
-        if (self.registers.a ^ n^ a) & 0x10:
+            #check for half-carry
+        if (self.registers.a ^ n ^ a) & 0x10:
             self.flags.h = True
         self.flags.n = True
         self.registers.m = 2
@@ -1271,16 +1269,16 @@ class CPU(object):
         self.set_register_pair(ss, self.get_register_pair(ss) + 1)
         self.registers.m = 2
 
-    def INC_bc(self):
+    def INC_ss_bc(self):
         self.INC_ss('bc')
 
-    def INC_de(self):
+    def INC_ss_de(self):
         self.INC_ss('de')
 
-    def INC_hl(self):
+    def INC_ss_hl(self):
         self.INC_ss('hl')
 
-    def INC_sp(self):
+    def INC_ss_sp(self):
         self.INC_ss('sp')
 
     def DEC_ss(self, ss):
@@ -1288,16 +1286,16 @@ class CPU(object):
         self.set_register_pair(ss, self.get_register_pair(ss) - 1)
         self.registers.m = 2
 
-    def DEC_bc(self):
+    def DEC_ss_bc(self):
         self.DEC_ss('bc')
 
-    def DEC_de(self):
+    def DEC_ss_de(self):
         self.DEC_ss('de')
 
-    def DEC_hl(self):
+    def DEC_ss_hl(self):
         self.DEC_ss('hl')
 
-    def DEC_sp(self):
+    def DEC_ss_sp(self):
         self.DEC_ss('sp')
 
     def RLCA(self):
@@ -2433,14 +2431,14 @@ class CPU(object):
     def JR_e(self):
         value = self.get_immediate_operand()
         if value > 127:
-            value =-((~value+1)&255)
+            value = -((~value + 1) & 255)
         self.registers.pc += value
         self.registers.m = 3
 
-    def JR_cc_e(self,cc):
+    def JR_cc_e(self, cc):
         value = self.get_immediate_operand()
         if value > 127:
-            value =-((~value+1)&255)
+            value = -((~value + 1) & 255)
         self.registers.m = 2
         if cc == 'nz':
             if not self.flags.z:
@@ -2458,7 +2456,7 @@ class CPU(object):
             if self.flags.cy:
                 self.registers.pc += value
                 self.registers.m += 1
-                
+
     def JR_nz_e(self):
         self.JR_cc_e('nz')
 
@@ -2487,7 +2485,7 @@ class CPU(object):
         self.registers.sp -= 2
         self.registers.m = 6
 
-    def CALL_cc_nn(self,cc):
+    def CALL_cc_nn(self, cc):
         ladrs = self.get_immediate_operand()
         hadrs = self.get_immediate_operand()
         nn = (hadrs << 8) + ladrs
@@ -2535,7 +2533,7 @@ class CPU(object):
         #might be incorrect
         self.RET()
 
-    def RET_cc(self,cc):
+    def RET_cc(self, cc):
         passed = False
         if cc == 'nz':
             if not self.flags.z:
@@ -2555,7 +2553,7 @@ class CPU(object):
             #RET will set it to 4 cycles, override
             self.registers.m = 5
 
-    
+
     def RET_nz(self):
         self.RET_cc('nz')
 
@@ -2567,9 +2565,9 @@ class CPU(object):
 
     def RET_c(self):
         self.RET_cc('c')
-        
 
-    def RST_t(self,t):
+
+    def RST_t(self, t):
         pch = self.registers.pc >> 8
         pcl = self.registers.pc & 0xFF
         self.mmu.write_byte(self.registers.sp - 1, pch)
@@ -2580,18 +2578,25 @@ class CPU(object):
 
     def RST_0(self):
         self.RST_t(0)
+
     def RST_1(self):
         self.RST_t(1)
+
     def RST_2(self):
         self.RST_t(2)
+
     def RST_3(self):
         self.RST_t(3)
+
     def RST_4(self):
         self.RST_t(4)
+
     def RST_5(self):
         self.RST_t(5)
+
     def RST_6(self):
         self.RST_t(6)
+
     def RST_7(self):
         self.RST_t(7)
 
@@ -2671,8 +2676,7 @@ class CPU(object):
 
     def CPL(self):
         self.registers.a = self.registers.a ^ 0xFF
-        self.registers.m =  1
-
+        self.registers.m = 1
 
 
     def NOP(self):
@@ -2687,6 +2691,47 @@ class CPU(object):
         self.stop = True
         self.registers.m = 1
 
-    def UNIMPLEMENTED(self):
+    def NOTIMP(self):
         self.stop = True
-        print "Unimplemented instruction %s Stopped" % hex(self.mmu.read_byte(self.registers.pc -1))
+        print "Unimplemented instruction %s Stopped" % hex(self.mmu.read_byte(self.registers.pc - 1))
+
+    def create_map(self):
+        map = [
+        #00 |NOP|       LD BC,nn |      LD (BC),A |     INC BC    |         INC B      |DEC B    |  LD B,n    | RLCA     |
+            self.NOP,   self.LDbc_nn,   self.LDbc_a,    self.INC_ss_bc,     self.INCb,  self.DECb,  self.LDb_n, self.RLCA,
+        #08 |EX AF,AF | ADD HL,BC|      LD A,(BC) |     DEC BC    |         INC C      |DEC C    |  LD C,n    | RRCA     |
+            self.NOTIMP,self.ADDhl_bc,  self.LDa_bc,    self.DEC_ss_bc,     self.INCc,  self.DECc,  self.LDc_n, self.RRCA,
+        #10 |DJNZ d   | LD DE,nn |      LD (DE),A |     INC DE    |         INC D      |DEC D    |  LD D,n    | RLA      |
+            self.NOTIMP,self.LDde_nn,   self.LDde_a,    self.INC_ss_de,     self.INCd,  self.DECd,  self.LDd_n, self.RLA,
+        #18 |JR d     |ADD HL,DE|       LD A,(DE) |     DEC DE    |         INC E      |DEC E    |  LD E,n    | RRA      |
+            self.JR_e,self.ADDhl_de,  self.LDa_de,      self.DEC_ss_de,     self.INCe,  self.DECe,  self.LDe_n, self.RRA,
+        #20 |JR NZ,d  |LD HL,nn |       LD (nn),HL|     INC HL    |         INC H      |DEC H    |  LD H,n    | DAA      |
+            self.JR_nz_e,self.LDhl_nn,  self.NOTIMP,    self.INC_ss_hl,     self.INCh,  self.DECh,  self.LDh_n, self.DAA,
+        #28 |JR Z,d   |ADD HL,HL|       LD HL,(nn)|     DEC HL    |         INC L      |DEC L    |  LD L,n    | CPL      |
+            self.JR_z_e,self.ADDhl_hl,  self.LDhl_nn,   self.DEC_ss_hl,     self.INCl, self.DECl,   self.LDl_n, self.CPL,
+        #30 |JR NC,d  |LD SP,nn |       LD (nn),A |     INC SP    |         INC (HL)   |DEC (HL) |  LD (HL),n | SCF      |
+            self.JR_nc_e(),self.LDsp_nn,self.LDnn_a,    self.INC_ss_sp,     self.INChl, self.DEChl,self.LDhl_n,self.NOTIMP,
+        #38 |JR C,d   |ADD HL,SP|       LD A,(nn) |     DEC SP    |         INC A      |DEC A    |  LD A,n    | CCF      |
+            self.JR_c_e,self.ADDhl_sp,  self.LDa_nn,    self.DEC_ss_sp,     self.INCa,  self.DECa,  self.LDa_n, self.NOTIMP,
+        #40 |LD B,B   |LD B,C   |       LD B,D    |     LD B,E    |         LD B,H     |LD B,L   |  LD B,(HL) | LD B,A   |
+            self.LDb_b,self.LDb_c,      self.LDb_d,     self.LDb_e,         self.LDb_h, self.LDb_l, self.LDb_hl,self.LDb_a,
+        #48 |LD C,B   |LD C,C   |       LD C,D    |     LD C,E    |         LD C,H     |LD C,L   |  LD C,(HL) | LD C,A   |
+            self.LDc_b,self.LDc_c,      self.LDc_d,     self.LDc_e,         self.LDc_h, self.LDc_l, self.LDc_hl,self.LDc_a,
+        #50 |LD D,B   |LD D,C   |       LD D,D    |     LD D,E    |         LD D,H     |LD D,L   |  LD D,(HL) | LD D,A   |
+            self.LDd_b,self.LDd_c,      self.LDd_d,     self.LDd_e,         self.LDd_h, self.LDd_l, self.LDd_hl,self.LDd_a,
+        #58 |LD E,B   |LD E,C   |       LD E,D    |     LD E,E    |         LD E,H     |LD E,L   |  LD E,(HL) | LD E,A   |
+            self.LDe_b,self.LDe_c,      self.LDe_d,     self.LDe_e,         self.LDe_h, self.LDe_l, self.LDe_hl,self.LDe_a,
+        #60 |LD H,B   |LD H,C   |       LD H,D    |     LD H,E    |         LD H,H     |LD H,L   |  LD H,(HL) | LD H,A   |
+            self.LDh_b,self.LDh_c,      self.LDh_d,     self.LDh_e,         self.LDh_h,self.LDh_l,  self.LDh_hl,self.LDh_a,
+        #68 |LD L,B   |LD L,C   |       LD L,D    |     LD L,E    |         LD L,H     |LD L,L   |  LD L,(HL) | LD L,A   |
+            self.LDl_b,self.LDl_c,      self.LDl_d,     self.LDl_e,         self.LDl_h,self.LDl_l,  self.LDl_hl,self.LDl_a,
+        #70 |LD (HL),B|LD (HL),C|       LD (HL),D |     LD (HL),E |         LD (HL),H  |LD (HL),L|  HALT      | LD (HL),A|
+            self.LDhl_b,self.LDhl_c,    self.LDhl_d,    self.LDhl_e,        self.LDhl_h,self.LDhl_l,self.HALT,  self.LDhl_a,
+        #78 |LD A,B   |LD A,C   |       LD A,D    |     LD A,E    |         LD A,H     |LD A,L   |  LD A,(HL) | LD A,A   |
+            self.LDa_b,self.LDa_c,      self.LDa_d,     self.LDa_e,         self.LDa_h, self.LDa_l, self.LDa_hl,self.LDa_a,
+
+        ]
+
+
+    def decode(self, b):
+        pass
